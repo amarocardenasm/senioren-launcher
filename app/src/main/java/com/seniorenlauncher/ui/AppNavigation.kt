@@ -10,9 +10,7 @@ import com.seniorenlauncher.ui.screens.*
 fun AppNavigation(
     settingsVm: SettingsViewModel,
     radioVm: RadioViewModel,
-    initialIncomingCall: Boolean = false,
     initialWeatherNav: Boolean = false,
-    onNavigatedToCall: () -> Unit = {},
     onNavigatedToWeather: () -> Unit = {},
     onRouteChanged: (String?) -> Unit = {}
 ) {
@@ -21,13 +19,6 @@ fun AppNavigation(
     LaunchedEffect(navController) {
         navController.currentBackStackEntryFlow.collect { entry ->
             onRouteChanged(entry.destination.route)
-        }
-    }
-
-    LaunchedEffect(initialIncomingCall) {
-        if (initialIncomingCall) {
-            navController.navigate("incoming_call")
-            onNavigatedToCall()
         }
     }
 
@@ -84,9 +75,6 @@ fun AppNavigation(
                 onBack = { navController.popBackStack() },
                 onNavigate = { route -> navController.navigate(route) }
             ) 
-        }
-        composable("incoming_call") { 
-            IncomingCallScreen(onEnd = { navController.popBackStack() }) 
         }
     }
 }

@@ -78,9 +78,6 @@ class SOSService : Service() {
         // Llamar directamente al primer contacto SOS (ya no se envian SMS)
         val firstContact = sosContacts.first()
         makeEmergencyCall(firstContact.phoneNumber)
-        
-        // 4. Forceer speaker voor komende gesprekken (Intercom modus)
-        SeniorInCallService.setForceSpeaker(true)
     }
 
     private fun makeEmergencyCall(phoneNumber: String) {

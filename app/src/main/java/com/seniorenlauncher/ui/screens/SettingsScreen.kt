@@ -255,10 +255,6 @@ fun SettingsScreenContent(
                     onNavigate("sos_settings") 
                 }
                 HorizontalDivider(Modifier.padding(vertical = 8.dp), thickness = 0.5.dp)
-                SettToggle("🛡️ Anti-Scam Filter", settings.scamProtectionEnabled) { 
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onToggleScamProtection() 
-                }
                 SettToggle("⚠️ Valdetectie", settings.fallDetectionEnabled) { 
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     onToggleFallDetection() 

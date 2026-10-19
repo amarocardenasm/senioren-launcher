@@ -21,8 +21,6 @@ import com.seniorenlauncher.ui.components.RadioMiniPlayer
 import com.seniorenlauncher.ui.screens.*
 import com.seniorenlauncher.ui.theme.SeniorenLauncherTheme
 import com.seniorenlauncher.ui.screens.home.*
-import com.seniorenlauncher.service.SeniorInCallService
-import android.telecom.Call
 import android.util.Log
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
@@ -34,7 +32,6 @@ class MainActivity : ComponentActivity() {
     private var alarmTriggered = mutableStateOf<String?>(null)
     private var alarmSoundUri = mutableStateOf<String?>(null)
     private var alarmIsRemote = mutableStateOf(false)
-    private var navigateToIncomingCall = mutableStateOf(false)
     private var navigateToWeatherAfterAlarm = mutableStateOf(false)
     private var fallDetectedTriggered = mutableStateOf(false)
 
@@ -74,11 +71,8 @@ class MainActivity : ComponentActivity() {
             val alarmId by currentAlarmId
             val soundUri by alarmSoundUri
             val isRemote by alarmIsRemote
-            val showIncomingCall by navigateToIncomingCall
             val shouldNavToWeather by navigateToWeatherAfterAlarm
             val isFallDetected by fallDetectedTriggered
-            
-            val currentCall by SeniorInCallService.currentCall.collectAsState()
             
             var currentRoute by remember { mutableStateOf<String?>(null) }
 
@@ -144,9 +138,7 @@ class MainActivity : ComponentActivity() {
                                 AppNavigation(
                                     settingsVm = settingsVm, 
                                     radioVm = radioVm, 
-                                    initialIncomingCall = showIncomingCall || (currentCall != null && currentCall?.state == Call.STATE_RINGING),
                                     initialWeatherNav = shouldNavToWeather,
-                                    onNavigatedToCall = { navigateToIncomingCall.value = false },
                                     onNavigatedToWeather = { navigateToWeatherAfterAlarm.value = false },
                                     onRouteChanged = { currentRoute = it }
                                 )
@@ -207,8 +199,6 @@ class MainActivity : ComponentActivity() {
                 alarmSoundUri.value = it.getStringExtra("ALARM_SOUND")
             } else if (navigateTo == "fall_detected") {
                 fallDetectedTriggered.value = true
-            } else if (navigateTo == "incoming_call") {
-                navigateToIncomingCall.value = true
             }
         }
     }
