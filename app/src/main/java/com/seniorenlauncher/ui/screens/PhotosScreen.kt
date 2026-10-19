@@ -71,9 +71,9 @@ fun PhotosScreen(onBack: () -> Unit) {
 
     Column(Modifier.fillMaxSize().background(Color(0xFF0F172A)).padding(horizontal = 12.dp, vertical = 8.dp)) {
         val title = when {
-            initialPageIndex != null -> "Foto bekijken"
+            initialPageIndex != null -> "Ver foto"
             selectedFolder != null -> selectedFolder!!
-            else -> "Foto Albums"
+            else -> "Álbumes de fotos"
         }
         
         ScreenHeader(title = title, onBack = {
@@ -90,7 +90,7 @@ fun PhotosScreen(onBack: () -> Unit) {
             }
         } else if (allPhotos.isEmpty()) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Geen foto's gevonden", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text("No se encontraron fotos", fontSize = 20.sp, fontWeight = FontWeight.Bold)
             }
         } else if (initialPageIndex != null) {
             PhotoPagerView(
@@ -101,10 +101,10 @@ fun PhotosScreen(onBack: () -> Unit) {
                     try {
                         context.contentResolver.delete(photoToDelete.uri, null, null)
                         allPhotos = allPhotos.filter { it.id != photoToDelete.id }
-                        Toast.makeText(context, "Foto verwijderd", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Foto eliminada", Toast.LENGTH_SHORT).show()
                         if (displayedPhotos.isEmpty()) initialPageIndex = null
                     } catch (e: Exception) {
-                        Toast.makeText(context, "Kan foto niet verwijderen", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "No se pudo eliminar la foto", Toast.LENGTH_SHORT).show()
                     }
                 }
             )
@@ -234,18 +234,18 @@ fun PhotoPagerView(
                 .padding(16.dp)
         ) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                CircleIconButton(Icons.Default.ArrowBack, "Terug") { onClose() }
+                CircleIconButton(Icons.Default.ArrowBack, "Volver") { onClose() }
                 
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    CircleIconButton(Icons.Default.Share, "Delen") {
+                    CircleIconButton(Icons.Default.Share, "Compartir") {
                         val shareIntent = Intent(Intent.ACTION_SEND).apply {
                             type = "image/*"
                             putExtra(Intent.EXTRA_STREAM, photos[pagerState.currentPage].uri)
                             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                         }
-                        context.startActivity(Intent.createChooser(shareIntent, "Foto delen"))
+                        context.startActivity(Intent.createChooser(shareIntent, "Compartir foto"))
                     }
-                    CircleIconButton(Icons.Default.Delete, "Verwijderen", Color.Red) {
+                    CircleIconButton(Icons.Default.Delete, "Eliminar", Color.Red) {
                         showDeleteConfirm = true
                     }
                 }
@@ -255,7 +255,7 @@ fun PhotoPagerView(
         // Navigation helpers
         if (pagerState.currentPage > 0) {
             Box(Modifier.align(Alignment.CenterStart).padding(8.dp)) {
-                CircleIconButton(Icons.Default.ChevronLeft, "Vorige", size = 64.dp) {
+                CircleIconButton(Icons.Default.ChevronLeft, "Anterior", size = 64.dp) {
                     scope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
                 }
             }
@@ -263,7 +263,7 @@ fun PhotoPagerView(
 
         if (pagerState.currentPage < photos.size - 1) {
             Box(Modifier.align(Alignment.CenterEnd).padding(8.dp)) {
-                CircleIconButton(Icons.Default.ChevronRight, "Volgende", size = 64.dp) {
+                CircleIconButton(Icons.Default.ChevronRight, "Siguiente", size = 64.dp) {
                     scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
                 }
             }
@@ -290,8 +290,8 @@ fun PhotoPagerView(
     if (showDeleteConfirm) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirm = false },
-            title = { Text("Verwijderen?", fontSize = 24.sp, fontWeight = FontWeight.Bold) },
-            text = { Text("Wilt u deze foto uit uw album verwijderen?", fontSize = 18.sp) },
+            title = { Text("¿Eliminar?", fontSize = 24.sp, fontWeight = FontWeight.Bold) },
+            text = { Text("¿Desea eliminar esta foto de su álbum?", fontSize = 18.sp) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -301,12 +301,12 @@ fun PhotoPagerView(
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
                     modifier = Modifier.height(60.dp)
                 ) {
-                    Text("JA, VERWIJDER", fontWeight = FontWeight.Bold)
+                    Text("SÍ, ELIMINAR", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteConfirm = false }) {
-                    Text("ANNULEREN", fontSize = 18.sp)
+                    Text("CANCELAR", fontSize = 18.sp)
                 }
             }
         )
@@ -356,7 +356,7 @@ fun fetchPhotos(context: Context): List<PhotoItem> {
             
             while (cursor.moveToNext() && photoList.size < 1000) {
                 val id = cursor.getLong(idColumn)
-                val folderName = cursor.getString(bucketColumn) ?: "Onbekend"
+                val folderName = cursor.getString(bucketColumn) ?: "Desconocido"
                 val contentUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id)
                 photoList.add(PhotoItem(contentUri, id, folderName))
             }

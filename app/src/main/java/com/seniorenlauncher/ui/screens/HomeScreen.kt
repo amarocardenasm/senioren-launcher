@@ -137,7 +137,7 @@ fun HomeScreenContent(
         LayoutType.GRID_3x4 -> 12
     }
 
-    // Bereken het totaal aantal items inclusief de "Toevoegen" knop
+    // Bereken het totaal aantal items inclusief de "Agregar" knop
     val totalItemsCount = allVisibleApps.size + 1
     val pageCount = max(1, ceil(totalItemsCount.toDouble() / appsPerPage.toDouble()).toInt())
     val pagerState = rememberPagerState(pageCount = { pageCount })
@@ -221,7 +221,7 @@ fun HomeScreenContent(
                     }
                 }
                 
-                // Voeg de "Toevoegen" knop toe als we op de juiste pagina zijn
+                // Voeg de "Agregar" knop toe als we op de juiste pagina zijn
                 val addBtnIdx = allVisibleApps.size
                 val start = startIdx
                 val limit = startIdx + appsPerPage
@@ -230,7 +230,7 @@ fun HomeScreenContent(
                     item {
                         BigButton(
                             emoji = "➕",
-                            label = "Toevoegen",
+                            label = "Agregar",
                             color = Color(0xFF718096),
                             small = settings.layout == LayoutType.GRID_3x4,
                             onClick = onAddApp

@@ -85,9 +85,9 @@ fun AlarmTriggerScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    val isMedication = label.startsWith("Medicijn:")
-    val isFindPhone = label.equals("TELEFOON ZOEKEN", ignoreCase = true)
-    val isRemoteMessage = isForcedRemote || activity?.intent?.getStringExtra("agendaTitle") == "BERICHT VAN BEHEERDER"
+    val isMedication = label.startsWith("Medicamento:")
+    val isFindPhone = label.equals("BUSCAR MI TELÉFONO", ignoreCase = true)
+    val isRemoteMessage = isForcedRemote || activity?.intent?.getStringExtra("agendaTitle") == "MENSAJE"
     val medPhotoUri = activity?.intent?.getStringExtra("MED_PHOTO")
     val isAgendaEvent = activity?.intent?.getBooleanExtra("isAgendaEvent", false) ?: false
     val agendaTitle = activity?.intent?.getStringExtra("agendaTitle") ?: ""
@@ -129,7 +129,7 @@ fun AlarmTriggerScreen(
     LaunchedEffect(Unit) {
         tts = TextToSpeech(appContext) { status ->
             if (status == TextToSpeech.SUCCESS) {
-                tts?.language = Locale.forLanguageTag("nl-NL")
+                tts?.language = Locale.forLanguageTag("es-CL")
                 tts?.setAudioAttributes(audioAttributes)
                 isTtsReady = true
             }
@@ -150,15 +150,15 @@ fun AlarmTriggerScreen(
         if (isTtsReady) {
             if (isFindPhone) {
                 while(true) {
-                    tts?.speak("Ik ben hier! Uw telefoon ligt hier!", TextToSpeech.QUEUE_FLUSH, null, "ZOEK")
+                    tts?.speak("¡Estoy aquí! ¡Su teléfono está aquí!", TextToSpeech.QUEUE_FLUSH, null, "BUSCAR")
                     delay(4000)
                 }
             } else {
                 val msg = when {
-                    isRemoteMessage -> "Bericht van familie: $label"
-                    isMedication -> "Tijd voor uw medicijnen. $label"
-                    isAgendaEvent -> "Herinnering. $label"
-                    else -> "Goedemorgen. Het is tijd voor: $label"
+                    isRemoteMessage -> "Mensaje: $label"
+                    isMedication -> "Es hora de sus medicamentos. $label"
+                    isAgendaEvent -> "Recordatorio. $label"
+                    else -> "Buenos días. Es hora de: $label"
                 }
                 if (isRemoteMessage) {
                     tts?.speak(msg, TextToSpeech.QUEUE_FLUSH, null, "Msg1")
@@ -212,11 +212,11 @@ fun AlarmTriggerScreen(
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = when { 
-                isRemoteMessage -> "📩 BERICHT"
-                isMedication -> "💊 MEDICIJNEN"
-                isAgendaEvent -> "📅 AFSPRAAK"
-                isFindPhone -> "🔍 ZOEKEN"
-                else -> "⏰ WEKKER" 
+                isRemoteMessage -> "📩 MENSAJE"
+                isMedication -> "💊 MEDICAMENTOS"
+                isAgendaEvent -> "📅 CITA"
+                isFindPhone -> "🔍 BUSCAR"
+                else -> "⏰ ALARMA" 
             }, fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Color.White, modifier = Modifier.padding(top = 20.dp))
         }
         
@@ -242,7 +242,7 @@ fun AlarmTriggerScreen(
                     else handleSnooze(context, label, alarmId, onDismiss)
                     onDismiss()
                 }, modifier = Modifier.fillMaxWidth().height(90.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2B6CB0).copy(alpha = 0.8f)), shape = RoundedCornerShape(24.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) { Icon(Icons.Default.Timer, null, modifier = Modifier.size(32.dp)); Spacer(Modifier.width(12.dp)); Text("HERINNER OVER 15 MIN", fontSize = 22.sp, fontWeight = FontWeight.Black) }
+                    Row(verticalAlignment = Alignment.CenterVertically) { Icon(Icons.Default.Timer, null, modifier = Modifier.size(32.dp)); Spacer(Modifier.width(12.dp)); Text("RECORDAR EN 15 MIN", fontSize = 22.sp, fontWeight = FontWeight.Black) }
                 }
             }
             Button(onClick = { 
@@ -254,7 +254,7 @@ fun AlarmTriggerScreen(
                 }
                 onDismiss() 
             }, modifier = Modifier.fillMaxWidth().height(if (isMedication || isRemoteMessage) 150.dp else 120.dp), colors = ButtonDefaults.buttonColors(containerColor = if (isMedication || isAgendaEvent || isFindPhone || isRemoteMessage) Color(0xFF10B981) else Color(0xFFEF4444)), shape = RoundedCornerShape(24.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) { Icon(if (isMedication || isAgendaEvent || isFindPhone || isRemoteMessage) Icons.Default.Check else Icons.Default.AlarmOff, null, modifier = Modifier.size(48.dp)); Spacer(Modifier.width(16.dp)); Text(text = when { isMedication -> "NU INGENOMEN"; isRemoteMessage || isAgendaEvent || isFindPhone -> "BEGREPEN"; else -> "UITZETTEN" }, fontSize = 32.sp, fontWeight = FontWeight.Black) }
+                Row(verticalAlignment = Alignment.CenterVertically) { Icon(if (isMedication || isAgendaEvent || isFindPhone || isRemoteMessage) Icons.Default.Check else Icons.Default.AlarmOff, null, modifier = Modifier.size(48.dp)); Spacer(Modifier.width(16.dp)); Text(text = when { isMedication -> "YA LO TOMÉ"; isRemoteMessage || isAgendaEvent || isFindPhone -> "ENTENDIDO"; else -> "APAGAR" }, fontSize = 32.sp, fontWeight = FontWeight.Black) }
             }
         }
         Spacer(Modifier.height(10.dp))
@@ -266,7 +266,7 @@ private suspend fun handleMedicationTakenLogic(medId: Long) {
     val med = dao.getById(medId)
     if (med != null && System.currentTimeMillis() - med.lastActionTime > 5 * 60 * 1000) {
         dao.update(med.copy(isPending = false, lastTakenDate = System.currentTimeMillis(), lastActionTime = System.currentTimeMillis(), stockCount = (med.stockCount - 1).coerceAtLeast(0)))
-        dao.insertLog(com.seniorenlauncher.data.model.MedicationLog(medicationId = med.id, date = System.currentTimeMillis(), time = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()), status = "TAKEN"))
+        dao.insertLog(com.seniorenlauncher.data.model.MedicationLog(medicationId = med.id, date = System.currentTimeMillis(), time = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()), status = "TAREAS"))
     }
 }
 
@@ -284,8 +284,8 @@ private suspend fun handleMedicationMissed(appContext: Context, medId: Long) {
 private fun handleSnooze(context: Context, label: String, alarmId: Long, onDismiss: () -> Unit) {
     val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
     val snoozeTime = System.currentTimeMillis() + (15 * 60 * 1000L)
-    val intent = Intent(context, AlarmReceiver::class.java).apply { putExtra("ALARM_ID", alarmId); putExtra("ALARM_LABEL", "$label (Sluimer)"); action = "com.seniorenlauncher.ALARM_SNOOZE_$alarmId" }
+    val intent = Intent(context, AlarmReceiver::class.java).apply { putExtra("ALARM_ID", alarmId); putExtra("ALARM_LABEL", "$label (Posponer)"); action = "com.seniorenlauncher.ALARM_SNOOZE_$alarmId" }
     val pi = PendingIntent.getBroadcast(context, (alarmId + 9999).toInt(), intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-    try { alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, snoozeTime, pi); Toast.makeText(context, "Tot over 15 minuten!", Toast.LENGTH_LONG).show() } catch (e: Exception) {}
+    try { alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, snoozeTime, pi); Toast.makeText(context, "¡Hasta en 15 minutos!", Toast.LENGTH_LONG).show() } catch (e: Exception) {}
     onDismiss()
 }

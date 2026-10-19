@@ -10,7 +10,7 @@ data class AppSettings(
     val theme: AppTheme = AppTheme.CLASSIC,
     val layout: LayoutType = LayoutType.GRID_2x3,
     val fontSize: Int = 18,
-    val language: String = "nl",
+    val language: String = "es",
     val nightModeAuto: Boolean = true,
     val visibleApps: Set<String> = setOf("phone", "sms", "camera", "photos", "meds", "emergency", "wifi", "bluetooth", "settings"),
     val appMappings: Map<String, String> = emptyMap(),
@@ -41,7 +41,7 @@ data class QuickContact(
 @Entity(tableName = "blocked_numbers")
 data class BlockedNumber(
     @PrimaryKey val phoneNumber: String,
-    val reason: String = "Blocked by remote admin"
+    val reason: String = "Bloqueado"
 )
 
 @Entity(tableName = "medications")
@@ -123,21 +123,21 @@ data class AppInfo(
 )
 
 val ALL_APPS = listOf(
-    AppInfo("phone", "Bellen", "📞", "📞", 0xFF38A169),
-    AppInfo("sms", "Berichten", "💬", "💬", 0xFF3B82F6),
-    AppInfo("camera", "Camera", "📷", "📷", 0xFFEC4899),
-    AppInfo("photos", "Foto's", "🖼️", "🖼️", 0xFFF59E0B),
-    AppInfo("alarm", "Wekker", "⏰", "⏰", 0xFFEA580C),
+    AppInfo("phone", "Teléfono", "📞", "📞", 0xFF38A169),
+    AppInfo("sms", "Mensajes", "💬", "💬", 0xFF3B82F6),
+    AppInfo("camera", "Cámara", "📷", "📷", 0xFFEC4899),
+    AppInfo("photos", "Fotos", "🖼️", "🖼️", 0xFFF59E0B),
+    AppInfo("alarm", "Alarma", "⏰", "⏰", 0xFFEA580C),
     AppInfo("calendar", "Agenda", "📅", "📅", 0xFF0D9488),
-    AppInfo("meds", "Medicijnen", "💊", "💊", 0xFFDC2626),
-    AppInfo("weather", "Weer", "🌤️", "🌤️", 0xFF0EA5E9),
-    AppInfo("flashlight", "Zaklamp", "🔦", "🔦", 0xFFFBBF24),
-    AppInfo("magnifier", "Vergrootglas", "🔍", "🔍", 0xFF6366F1),
-    AppInfo("notes", "Notities", "📝", "📝", 0xFF84CC16),
+    AppInfo("meds", "Medicamentos", "💊", "💊", 0xFFDC2626),
+    AppInfo("weather", "Clima", "🌤️", "🌤️", 0xFF0EA5E9),
+    AppInfo("flashlight", "Linterna", "🔦", "🔦", 0xFFFBBF24),
+    AppInfo("magnifier", "Lupa", "🔍", "🔍", 0xFF6366F1),
+    AppInfo("notes", "Notas", "📝", "📝", 0xFF84CC16),
     AppInfo("wifi", "Wifi", "📶", "📶", 0xFF4A5568),
     AppInfo("bluetooth", "Bluetooth", "📶", "📶", 0xFF4A5568),
-    AppInfo("steps", "Stappen", "🚶", "🚶", 0xFF14B8A6),
-    AppInfo("emergency", "Noodinfo", "🏥", "🏥", 0xFFEF4444),
-    AppInfo("all_apps", "Alle Apps", "📱", "📱", 0xFF718096),
-    AppInfo("settings", "Instellingen", "⚙️", "⚙️", 0xFF718096),
+    AppInfo("steps", "Pasos", "🚶", "🚶", 0xFF14B8A6),
+    AppInfo("emergency", "Ficha médica", "🏥", "🏥", 0xFFEF4444),
+    AppInfo("all_apps", "Todas las apps", "📱", "📱", 0xFF718096),
+    AppInfo("settings", "Ajustes", "⚙️", "⚙️", 0xFF718096),
 )

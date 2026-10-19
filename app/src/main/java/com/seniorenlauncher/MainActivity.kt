@@ -109,7 +109,7 @@ class MainActivity : ComponentActivity() {
                             onDismiss = {
                                 val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                                 nm.cancel(alarmId.toInt())
-                                if (triggerLabel!!.startsWith("Medicijn:")) {
+                                if (triggerLabel!!.startsWith("Medicamento:")) {
                                     nm.cancel(alarmId.toInt() + 5000)
                                 }
                                 alarmTriggered.value = null
@@ -177,11 +177,11 @@ class MainActivity : ComponentActivity() {
         intent?.let {
             val navigateTo = it.getStringExtra("NAVIGATE_TO")
             if (navigateTo == "alarm_trigger") {
-                val label = it.getStringExtra("ALARM_LABEL") ?: "Wekker"
+                val label = it.getStringExtra("ALARM_LABEL") ?: "Alarma"
                 val id = it.getLongExtra("ALARM_ID", -1L)
-                val isRemote = it.getStringExtra("agendaTitle") == "BERICHT VAN BEHEERDER"
+                val isRemote = it.getStringExtra("agendaTitle") == "MENSAJE"
                 
-                Log.d("MainActivity", "Wekker ontvangen: $label met ID: $id (Remote: $isRemote)")
+                Log.d("MainActivity", "Alarma recibida: $label con ID: $id")
                 alarmTriggered.value = label
                 currentAlarmId.value = id
                 alarmIsRemote.value = isRemote

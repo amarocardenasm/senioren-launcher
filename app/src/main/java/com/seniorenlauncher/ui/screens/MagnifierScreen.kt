@@ -54,13 +54,13 @@ fun MagnifierScreen(onBack: () -> Unit) {
     }
 
     Column(Modifier.fillMaxSize().background(Color.Black)) {
-        ScreenHeader(title = "Vergrootglas", onBack = onBack)
+        ScreenHeader(title = "Lupa", onBack = onBack)
         
         if (hasCameraPermission) {
             MagnifierCameraPreview(modifier = Modifier.weight(1f))
         } else {
             Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Text("Camera toegang nodig voor het vergrootglas.", color = Color.White, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                Text("Se necesita acceso a la cámara para la lupa.", color = Color.White, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
             }
         }
     }
@@ -154,7 +154,7 @@ fun MagnifierCameraPreview(modifier: Modifier = Modifier) {
                 LargeCircleButton(
                     icon = Icons.Default.Camera,
                     onClick = {
-                        Toast.makeText(context, "Beeld vastgezet (niet echt)", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Imagen congelada", Toast.LENGTH_SHORT).show()
                     },
                     color = MaterialTheme.colorScheme.primary
                 )

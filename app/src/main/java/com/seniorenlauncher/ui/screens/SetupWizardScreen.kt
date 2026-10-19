@@ -169,7 +169,7 @@ fun PrivacyConsentScreen(onAccepted: () -> Unit) {
         Spacer(Modifier.height(32.dp))
         
         Text(
-            text = "Door op de knop hieronder te drukken, gaat u akkoord met onze privacyverklaring.",
+            text = "Al presionar el botón de abajo, usted acepta nuestra política de privacidad.",
             fontSize = 15.sp,
             textAlign = TextAlign.Center,
             color = Color(0xFFCBD5E1),
@@ -214,7 +214,7 @@ fun FlowSelectionScreen(onFlowSelected: (WizardSetupFlow) -> Unit) {
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "WELKOM.\nWIE STELT DEZE TELEFOON IN?",
+            text = "BIENVENIDO.\n¿QUIÉN CONFIGURA ESTE TELÉFONO?",
             fontSize = 32.sp,
             lineHeight = 42.sp,
             fontWeight = FontWeight.Black,
@@ -230,7 +230,7 @@ fun FlowSelectionScreen(onFlowSelected: (WizardSetupFlow) -> Unit) {
             border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
         ) {
             Text(
-                "De setup bestaat uit twee delen: technische instellingen door de beheerder en visuele keuzes voor de senior.",
+                "La configuración tiene dos partes: los ajustes técnicos y las preferencias visuales de quien usará el teléfono.",
                 modifier = Modifier.padding(24.dp),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
@@ -240,8 +240,8 @@ fun FlowSelectionScreen(onFlowSelected: (WizardSetupFlow) -> Unit) {
         }
 
         SetupOptionCard(
-            title = "IK BEN DE MANTELZORGER",
-            description = "Ik stel dit toestel technisch in (aanbevolen).",
+            title = "SOY FAMILIAR O CUIDADOR",
+            description = "Configuro el teléfono por la persona (recomendado).",
             icon = Icons.Default.VolunteerActivism,
             color = Color(0xFF3B82F6),
             onClick = { onFlowSelected(WizardSetupFlow.CAREGIVER) }
@@ -250,8 +250,8 @@ fun FlowSelectionScreen(onFlowSelected: (WizardSetupFlow) -> Unit) {
         Spacer(Modifier.height(24.dp))
 
         SetupOptionCard(
-            title = "IK BEN DE GEBRUIKER",
-            description = "Ik ga deze telefoon direct zelf gebruiken.",
+            title = "YO USARÉ EL TELÉFONO",
+            description = "Voy a usar este teléfono directamente.",
             icon = Icons.Default.Person,
             color = Color(0xFF10B981),
             onClick = { onFlowSelected(WizardSetupFlow.SENIOR) }
@@ -301,7 +301,7 @@ fun ContactPickerDialog(onDismiss: () -> Unit, onContactSelected: (String, Strin
             colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B))
         ) {
             Column(Modifier.padding(24.dp)) {
-                Text("KIES EEN CONTACT", fontSize = 24.sp, fontWeight = FontWeight.Black, color = Color.White)
+                Text("ELIJA UN CONTACTO", fontSize = 24.sp, fontWeight = FontWeight.Black, color = Color.White)
                 
                 Spacer(Modifier.height(20.dp))
                 
@@ -309,7 +309,7 @@ fun ContactPickerDialog(onDismiss: () -> Unit, onContactSelected: (String, Strin
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("Zoek op naam of nummer...", fontWeight = FontWeight.Bold, color = Color(0xFF94A3B8)) },
+                    placeholder = { Text("Busque por nombre o número...", fontWeight = FontWeight.Bold, color = Color(0xFF94A3B8)) },
                     leadingIcon = { Icon(Icons.Default.Search, null, tint = Color(0xFF94A3B8)) },
                     shape = RoundedCornerShape(20.dp),
                     singleLine = true,
@@ -384,7 +384,7 @@ fun ContactPickerDialog(onDismiss: () -> Unit, onContactSelected: (String, Strin
                     border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f)),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
                 ) {
-                    Text("ANNULEREN", fontWeight = FontWeight.Black, fontSize = 18.sp)
+                    Text("CANCELAR", fontWeight = FontWeight.Black, fontSize = 18.sp)
                 }
             }
         }

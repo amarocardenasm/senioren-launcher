@@ -37,7 +37,7 @@ object AppLauncher {
             context.startActivity(intent)
         } catch (e: Exception) {
             Log.e("AppLauncher", "Error opening camera", e)
-            Toast.makeText(context, "Kan camera niet openen", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "No se pudo abrir la cámara", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -82,7 +82,7 @@ object AppLauncher {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             context.startActivity(intent)
         } catch (e: Exception) {
-            Toast.makeText(context, "No se encontro la app de mensajes", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, "No se encontró la app de mensajes", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -97,7 +97,7 @@ object AppLauncher {
             context.startActivity(intent)
         } catch (e: Exception) {
             Log.e("AppLauncher", "Error opening wifi settings", e)
-            Toast.makeText(context, "Kan wifi-instellingen niet openen", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "No se pudo abrir los ajustes de Wi-Fi", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -118,7 +118,7 @@ object AppLauncher {
                 context.startActivity(intent)
             } catch (e2: Exception) {
                 Log.e("AppLauncher", "Error opening bluetooth settings", e2)
-                Toast.makeText(context, "Kan bluetooth-instellingen niet openen", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "No se pudo abrir los ajustes de Bluetooth", Toast.LENGTH_SHORT).show()
             }
         }
     }

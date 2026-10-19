@@ -25,7 +25,7 @@ class MedicationAlarmReceiver : BroadcastReceiver() {
         val medicationId = intent.getLongExtra("medication_id", -1L)
         val isSnooze = intent.getBooleanExtra("is_snooze", false)
         val isEscalation = intent.getBooleanExtra("is_escalation", false)
-        val label = intent.getStringExtra("label") ?: "Medicijn"
+        val label = intent.getStringExtra("label") ?: "Medicamento"
 
         if (medicationId == -1L) return
 
@@ -97,7 +97,7 @@ class MedicationAlarmReceiver : BroadcastReceiver() {
         val tapIntent = Intent(ctx, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
             putExtra("NAVIGATE_TO", "alarm_trigger")
-            putExtra("ALARM_LABEL", "Medicijn: ${med.name}")
+            putExtra("ALARM_LABEL", "Medicamento: ${med.name}")
             putExtra("ALARM_ID", med.id)
             putExtra("MED_PHOTO", med.photoUri)
             action = "com.seniorenlauncher.MED_ALARM_${med.id}"
@@ -109,8 +109,8 @@ class MedicationAlarmReceiver : BroadcastReceiver() {
         )
 
         val notification = NotificationCompat.Builder(ctx, LauncherApp.CH_MEDS)
-            .setContentTitle("💊 TIJD VOOR MEDICIJNEN")
-            .setContentText("Neem nu in: ${med.name} (${med.dose})")
+            .setContentTitle("💊 HORA DE SUS MEDICAMENTOS")
+            .setContentText("Tómelo ahora: ${med.name} (${med.dose})")
             .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_ALARM)

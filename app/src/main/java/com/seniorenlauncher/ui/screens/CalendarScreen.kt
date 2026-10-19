@@ -78,7 +78,7 @@ data class CalendarEventInfo(
 fun CalendarScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val localeNl = remember { Locale("nl", "BE") }
+    val localeNl = remember { Locale("es", "CL") }
     
     var canDrawOverlays by remember { mutableStateOf(Settings.canDrawOverlays(context)) }
     
@@ -154,7 +154,7 @@ fun CalendarScreen(onBack: () -> Unit) {
                 Row(Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Warning, null, tint = Color(0xFFEF4444), modifier = Modifier.size(32.dp))
                     Spacer(Modifier.width(16.dp))
-                    Text("Zet 'Verschijnen bovenop' AAN voor wekkers.", fontSize = 16.sp, fontWeight = FontWeight.Black, color = Color.White)
+                    Text("Active "Mostrar sobre otras apps" para las alarmas.", fontSize = 16.sp, fontWeight = FontWeight.Black, color = Color.White)
                 }
             }
         }
@@ -167,7 +167,7 @@ fun CalendarScreen(onBack: () -> Unit) {
                     shape = RoundedCornerShape(24.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF4444))
                 ) {
-                    Text("GEEF TOESTEMMING VOOR AGENDA", fontSize = 20.sp, fontWeight = FontWeight.Black, textAlign = TextAlign.Center)
+                    Text("DAR PERMISO PARA LA AGENDA", fontSize = 20.sp, fontWeight = FontWeight.Black, textAlign = TextAlign.Center)
                 }
             }
         } else {
@@ -175,7 +175,7 @@ fun CalendarScreen(onBack: () -> Unit) {
                 Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
             } else if (events.isEmpty()) {
                 Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    Text("Geen afspraken in de komende 3 maanden", fontSize = 20.sp, textAlign = TextAlign.Center)
+                    Text("No hay citas en los próximos 3 meses", fontSize = 20.sp, textAlign = TextAlign.Center)
                 }
             } else {
                 LazyColumn(
@@ -191,11 +191,11 @@ fun CalendarScreen(onBack: () -> Unit) {
                             var showDeleteConfirm by remember { mutableStateOf(false) }
                             EventCard(event = event, onClick = {
                                 val dayPrefix = when {
-                                    isToday(event.startTime) -> "Vandaag"
-                                    isTomorrow(event.startTime) -> "Morgen"
+                                    isToday(event.startTime) -> "Hoy"
+                                    isTomorrow(event.startTime) -> "Mañana"
                                     else -> SimpleDateFormat("EEEE d MMMM", localeNl).format(Date(event.startTime))
                                 }
-                                val timeMsg = if (event.isAllDay) "de hele dag" else "om " + SimpleDateFormat("HH:mm", localeNl).format(Date(event.startTime))
+                                val timeMsg = if (event.isAllDay) "todo el día" else "om " + SimpleDateFormat("HH:mm", localeNl).format(Date(event.startTime))
                                 val msg = "$dayPrefix, $timeMsg. ${event.title}"
                                 tts?.speak(msg, TextToSpeech.QUEUE_FLUSH, null, "EventID")
                             }, onLongClick = { showDeleteConfirm = true })
@@ -203,8 +203,8 @@ fun CalendarScreen(onBack: () -> Unit) {
                             if (showDeleteConfirm) {
                                 AlertDialog(
                                     onDismissRequest = { showDeleteConfirm = false },
-                                    title = { Text("Verwijderen?") },
-                                    text = { Text("Wilt u '${event.title}' verwijderen?") },
+                                    title = { Text("¿Eliminar?") },
+                                    text = { Text("¿Desea eliminar "${event.title}"?") },
                                     confirmButton = {
                                         Button(onClick = {
                                             scope.launch(Dispatchers.IO) {
@@ -212,9 +212,9 @@ fun CalendarScreen(onBack: () -> Unit) {
                                                 refreshEvents()
                                             }
                                             showDeleteConfirm = false
-                                        }, colors = ButtonDefaults.buttonColors(containerColor = Color.Red)) { Text("VERWIJDER") }
+                                        }, colors = ButtonDefaults.buttonColors(containerColor = Color.Red)) { Text("ELIMINAR") }
                                     },
-                                    dismissButton = { TextButton(onClick = { showDeleteConfirm = false }) { Text("ANNULEREN") } }
+                                    dismissButton = { TextButton(onClick = { showDeleteConfirm = false }) { Text("CANCELAR") } }
                                 )
                             }
                         }
@@ -242,7 +242,7 @@ fun CalendarScreen(onBack: () -> Unit) {
                 ) {
                     Icon(Icons.Default.Add, null)
                     Spacer(Modifier.width(12.dp))
-                    Text("NIEUWE AFSPRAAK", fontSize = 22.sp, fontWeight = FontWeight.Black)
+                    Text("NUEVA CITA", fontSize = 22.sp, fontWeight = FontWeight.Black)
                 }
             }
         }
@@ -274,7 +274,7 @@ fun SeniorFriendlyAddEventDialog(onDismiss: () -> Unit, onSave: (String, Long) -
     var hour by remember { mutableIntStateOf(calendar.get(Calendar.HOUR_OF_DAY)) }
     var minute by remember { mutableIntStateOf(calendar.get(Calendar.MINUTE)) }
     
-    val dateLabel = SimpleDateFormat("EEEE d MMMM yyyy", Locale("nl", "BE")).format(Date(selectedDate)).uppercase()
+    val dateLabel = SimpleDateFormat("EEEE d MMMM yyyy", Locale("es", "CL")).format(Date(selectedDate)).uppercase()
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -290,15 +290,15 @@ fun SeniorFriendlyAddEventDialog(onDismiss: () -> Unit, onSave: (String, Long) -
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                Text("AFSPRAAK MAKEN", fontSize = 32.sp, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.primary)
+                Text("CREAR CITA", fontSize = 32.sp, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.primary)
 
                 Column(Modifier.fillMaxWidth()) {
-                    Text("1. WAT GAAT U DOEN?", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
+                    Text("1. ¿QUÉ VA A HACER?", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
                     Spacer(Modifier.height(8.dp))
                     OutlinedTextField(
                         value = title, 
                         onValueChange = { title = it }, 
-                        placeholder = { Text("Bijv. Kapper of Dokter", fontSize = 20.sp) },
+                        placeholder = { Text("Ej.: Peluquería o Doctor", fontSize = 20.sp) },
                         modifier = Modifier.fillMaxWidth(), 
                         textStyle = LocalTextStyle.current.copy(fontSize = 26.sp, fontWeight = FontWeight.Bold), 
                         shape = RoundedCornerShape(16.dp),
@@ -307,7 +307,7 @@ fun SeniorFriendlyAddEventDialog(onDismiss: () -> Unit, onSave: (String, Long) -
                 }
 
                 Column(Modifier.fillMaxWidth()) {
-                    Text("2. WELKE DAG?", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
+                    Text("2. ¿QUÉ DÍA?", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
                     Spacer(Modifier.height(8.dp))
                     Button(
                         onClick = {
@@ -334,7 +334,7 @@ fun SeniorFriendlyAddEventDialog(onDismiss: () -> Unit, onSave: (String, Long) -
                 }
 
                 Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("3. HOE LAAT?", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
+                    Text("3. ¿A QUÉ HORA?", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
                     Spacer(Modifier.height(16.dp))
                     Row(
                         Modifier.fillMaxWidth(), 
@@ -344,7 +344,7 @@ fun SeniorFriendlyAddEventDialog(onDismiss: () -> Unit, onSave: (String, Long) -
                         TimeStepper(
                             value = hour, 
                             range = 0..23, 
-                            label = "UUR", 
+                            label = "HORA", 
                             onValueChange = { hour = it }, 
                             fontSize = 64.sp, 
                             buttonSize = 80.dp,
@@ -372,7 +372,7 @@ fun SeniorFriendlyAddEventDialog(onDismiss: () -> Unit, onSave: (String, Long) -
                         shape = RoundedCornerShape(20.dp),
                         border = androidx.compose.foundation.BorderStroke(2.dp, Color.Gray)
                     ) { 
-                        Text("STOP", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.Gray) 
+                        Text("DETENER", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.Gray) 
                     }
                     Button(
                         onClick = {
@@ -390,7 +390,7 @@ fun SeniorFriendlyAddEventDialog(onDismiss: () -> Unit, onSave: (String, Long) -
                         enabled = title.isNotBlank(),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) { 
-                        Text("OPSLAAN", fontSize = 26.sp, fontWeight = FontWeight.Black) 
+                        Text("GUARDAR", fontSize = 26.sp, fontWeight = FontWeight.Black) 
                     }
                 }
             }
@@ -413,7 +413,7 @@ private suspend fun insertCalendarEvent(context: Context, contentResolver: Conte
         if (eventID != null) {
             val reminderValues = ContentValues().apply { put(CalendarContract.Reminders.EVENT_ID, eventID); put(CalendarContract.Reminders.MINUTES, 15); put(CalendarContract.Reminders.METHOD, CalendarContract.Reminders.METHOD_ALERT) }
             contentResolver.insert(CalendarContract.Reminders.CONTENT_URI, reminderValues)
-            withContext(Dispatchers.Main) { Toast.makeText(context, "Afspraak opgeslagen!", Toast.LENGTH_SHORT).show() }
+            withContext(Dispatchers.Main) { Toast.makeText(context, "¡Cita guardada!", Toast.LENGTH_SHORT).show() }
         }
     } catch (e: Exception) { Log.e("Calendar", "Insert error", e) }
 }
@@ -446,7 +446,7 @@ fun EventCard(event: CalendarEventInfo, onClick: () -> Unit, onLongClick: () -> 
         border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
     ) {
         Row(Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(text = if (event.isAllDay) "Hele dag" else SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(event.startTime)), fontSize = 24.sp, fontWeight = FontWeight.Black, color = if (isPast) Color.Gray else MaterialTheme.colorScheme.primary, modifier = Modifier.width(70.dp))
+            Text(text = if (event.isAllDay) "Todo el día" else SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(event.startTime)), fontSize = 24.sp, fontWeight = FontWeight.Black, color = if (isPast) Color.Gray else MaterialTheme.colorScheme.primary, modifier = Modifier.width(70.dp))
             Spacer(Modifier.width(12.dp))
             Box(Modifier.width(2.dp).height(40.dp).background(if (isPast) Color.Gray else MaterialTheme.colorScheme.primary))
             Spacer(Modifier.width(20.dp))
@@ -471,7 +471,7 @@ private fun fetchCalendarInstances(contentResolver: ContentResolver): List<Calen
             val endIdx = cursor.getColumnIndexOrThrow(CalendarContract.Instances.END)
             val allDayIdx = cursor.getColumnIndexOrThrow(CalendarContract.Instances.ALL_DAY)
             while (cursor.moveToNext()) {
-                eventList.add(CalendarEventInfo(cursor.getLong(idIdx), cursor.getLong(eventIdIdx), cursor.getString(titleIdx) ?: "(Geen titel)", cursor.getLong(beginIdx), cursor.getLong(endIdx), null, cursor.getInt(allDayIdx) != 0))
+                eventList.add(CalendarEventInfo(cursor.getLong(idIdx), cursor.getLong(eventIdIdx), cursor.getString(titleIdx) ?: "(Sin título)", cursor.getLong(beginIdx), cursor.getLong(endIdx), null, cursor.getInt(allDayIdx) != 0))
             }
         }
     } catch (e: Exception) { Log.e("Calendar", "Query error", e) }
@@ -504,8 +504,8 @@ private fun deleteEvent(contentResolver: ContentResolver, eventId: Long) {
 private fun groupEventsByDay(events: List<CalendarEventInfo>, locale: Locale): Map<String, List<CalendarEventInfo>> {
     return events.groupBy { event ->
         when {
-            isToday(event.startTime) -> "VANDAAG"
-            isTomorrow(event.startTime) -> "MORGEN"
+            isToday(event.startTime) -> "HOY"
+            isTomorrow(event.startTime) -> "MAÑANA"
             else -> SimpleDateFormat("EEEE d MMMM", locale).format(Date(event.startTime)).uppercase()
         }
     }

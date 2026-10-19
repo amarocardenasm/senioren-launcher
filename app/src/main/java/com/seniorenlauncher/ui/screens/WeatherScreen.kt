@@ -76,7 +76,7 @@ fun WeatherScreen(onBack: () -> Unit, viewModel: WeatherViewModel = viewModel())
 
     var tts by remember { mutableStateOf<TextToSpeech?>(null) }
     DisposableEffect(Unit) {
-        tts = TextToSpeech(context) { status -> if (status == TextToSpeech.SUCCESS) tts?.language = Locale.forLanguageTag("nl-NL") }
+        tts = TextToSpeech(context) { status -> if (status == TextToSpeech.SUCCESS) tts?.language = Locale.forLanguageTag("es-CL") }
         onDispose { tts?.stop(); tts?.shutdown() }
     }
 
@@ -90,7 +90,7 @@ fun WeatherScreen(onBack: () -> Unit, viewModel: WeatherViewModel = viewModel())
                 .padding(innerPadding)
                 .padding(horizontal = 20.dp)
         ) {
-            ScreenHeader(title = "Weer in ${selectedLocation?.cityName ?: "uw regio"}", onBack = onBack)
+            ScreenHeader(title = "Clima en ${selectedLocation?.cityName ?: "su zona"}", onBack = onBack)
 
             if (!hasLocationPermission) {
                 Surface(
@@ -105,7 +105,7 @@ fun WeatherScreen(onBack: () -> Unit, viewModel: WeatherViewModel = viewModel())
                     Row(Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.LocationOff, null, tint = Color(0xFFEF4444), modifier = Modifier.size(32.dp))
                         Spacer(Modifier.width(16.dp))
-                        Text("Locatie-toegang nodig", color = Color.White, fontWeight = FontWeight.Black, fontSize = 20.sp)
+                        Text("Se necesita acceso a la ubicación", color = Color.White, fontWeight = FontWeight.Black, fontSize = 20.sp)
                     }
                 }
             }
@@ -137,7 +137,7 @@ fun WeatherScreen(onBack: () -> Unit, viewModel: WeatherViewModel = viewModel())
                 ) {
                     Icon(Icons.Default.LocationOn, null, tint = Color(0xFF6366F1), modifier = Modifier.size(28.dp))
                     Spacer(Modifier.width(12.dp))
-                    Text("ANDERE STAD KIEZEN", fontSize = 18.sp, fontWeight = FontWeight.Black, color = Color.White)
+                    Text("ELEGIR OTRA CIUDAD", fontSize = 18.sp, fontWeight = FontWeight.Black, color = Color.White)
                 }
             }
 
@@ -158,7 +158,7 @@ fun WeatherScreen(onBack: () -> Unit, viewModel: WeatherViewModel = viewModel())
                         border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
                     ) {
                         Column(Modifier.padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("KLEDINGADVIES", fontSize = 14.sp, fontWeight = FontWeight.Black, color = Color(0xFF6366F1), letterSpacing = 2.sp)
+                            Text("QUÉ ROPA USAR", fontSize = 14.sp, fontWeight = FontWeight.Black, color = Color(0xFF6366F1), letterSpacing = 2.sp)
                             Spacer(Modifier.height(12.dp))
                             Text(data.clothingIcons, fontSize = 80.sp)
                         }
@@ -179,11 +179,11 @@ fun WeatherScreen(onBack: () -> Unit, viewModel: WeatherViewModel = viewModel())
                                 indication = null,
                                 onClick = {
                                     val statusText = when(safetyStatus) {
-                                        SafetyStatus.RED -> if (data.temp > 30) "Blijf binnen, extreem warm." else "Blijf binnen, gevaarlijk weer."
-                                        SafetyStatus.ORANGE -> "Let op, kans op regen of wind."
-                                        SafetyStatus.GREEN -> "Heerlijk weer om buiten te komen!"
+                                        SafetyStatus.RED -> if (data.temp > 30) "Quédese en casa, hace muchísimo calor." else "Quédese en casa, el clima es peligroso."
+                                        SafetyStatus.ORANGE -> "Atención, posibilidad de lluvia o viento."
+                                        SafetyStatus.GREEN -> "¡Buen clima para salir!"
                                     }
-                                    val speech = "Het is nu ${data.temp.toInt()} graden. $statusText ${data.gardenAdvice} ${data.windowAdvice} ${data.activityAdvice} ${data.uvAdvice}"
+                                    val speech = "Ahora hay ${data.temp.toInt()} grados. $statusText ${data.gardenAdvice} ${data.windowAdvice} ${data.activityAdvice} ${data.uvAdvice}"
                                     tts?.speak(speech, TextToSpeech.QUEUE_FLUSH, null, "WeatherSpeak")
                                 }
                             ),
@@ -198,7 +198,7 @@ fun WeatherScreen(onBack: () -> Unit, viewModel: WeatherViewModel = viewModel())
                         ) {
                             Icon(Icons.AutoMirrored.Filled.VolumeUp, null, modifier = Modifier.size(44.dp), tint = Color.White)
                             Spacer(Modifier.width(20.dp))
-                            Text("LUISTER NAAR ADVIES", fontSize = 24.sp, fontWeight = FontWeight.Black, color = Color.White)
+                            Text("ESCUCHAR EL CONSEJO", fontSize = 24.sp, fontWeight = FontWeight.Black, color = Color.White)
                         }
                     }
 
@@ -207,7 +207,7 @@ fun WeatherScreen(onBack: () -> Unit, viewModel: WeatherViewModel = viewModel())
                     if (data.activityAdvice.isNotEmpty()) AdviceCard(data.activityAdvice, Color(0xFF8B5CF6), "🚶")
                     if (data.uvAdvice.isNotEmpty()) AdviceCard(data.uvAdvice, Color(0xFFF59E0B), "☀️")
 
-                    Text("DAGDELEN", fontSize = 22.sp, fontWeight = FontWeight.Black, color = Color.White, modifier = Modifier.padding(top = 8.dp))
+                    Text("DURANTE EL DÍA", fontSize = 22.sp, fontWeight = FontWeight.Black, color = Color.White, modifier = Modifier.padding(top = 8.dp))
                     dayParts.forEach { part -> DayPartCard(part) }
                     
                     Spacer(Modifier.height(32.dp))
@@ -251,9 +251,9 @@ fun AdviceCard(text: String, accentColor: Color, icon: String) {
 @Composable
 fun SafetyTrafficLight(status: SafetyStatus, temp: Double) {
     val (color, text) = when(status) {
-        SafetyStatus.RED -> Color(0xFFEF4444) to if (temp > 30) "EXTREME HITTE: Blijf binnen" else "GEVAARLIJK WEER: Blijf binnen"
-        SafetyStatus.ORANGE -> Color(0xFFF59E0B) to "PAS OP: Kans op regen of wind"
-        SafetyStatus.GREEN -> Color(0xFF10B981) to "VEILIG: Heerlijk weer om buiten te zijn"
+        SafetyStatus.RED -> Color(0xFFEF4444) to if (temp > 30) "CALOR EXTREMO: quédese en casa" else "CLIMA PELIGROSO: quédese en casa"
+        SafetyStatus.ORANGE -> Color(0xFFF59E0B) to "CUIDADO: posible lluvia o viento"
+        SafetyStatus.GREEN -> Color(0xFF10B981) to "BUEN CLIMA: ideal para salir"
     }
 
     Surface(
@@ -313,14 +313,14 @@ fun LocationDialog(
             border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
         ) {
             Column(Modifier.padding(24.dp)) {
-                Text("Locatie Kiezen", fontSize = 28.sp, fontWeight = FontWeight.Black, color = Color.White)
+                Text("Elegir ubicación", fontSize = 28.sp, fontWeight = FontWeight.Black, color = Color.White)
                 Spacer(Modifier.height(16.dp))
                 
                 OutlinedTextField(
                     value = query, 
                     onValueChange = { query = it }, 
                     modifier = Modifier.fillMaxWidth(), 
-                    label = { Text("Zoek stad...", fontWeight = FontWeight.Bold) },
+                    label = { Text("Busque una ciudad...", fontWeight = FontWeight.Bold) },
                     shape = RoundedCornerShape(40.dp),
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color.Transparent,
@@ -336,7 +336,7 @@ fun LocationDialog(
                     shape = RoundedCornerShape(40.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) { 
-                    Text("ZOEKEN & TOEVOEGEN", fontWeight = FontWeight.Black) 
+                    Text("BUSCAR Y AGREGAR", fontWeight = FontWeight.Black) 
                 }
                 
                 LazyColumn(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -360,7 +360,7 @@ fun LocationDialog(
                 }
                 
                 TextButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth().height(60.dp)) { 
-                    Text("SLUITEN", color = Color.White.copy(alpha = 0.6f), fontWeight = FontWeight.Black)
+                    Text("CERRAR", color = Color.White.copy(alpha = 0.6f), fontWeight = FontWeight.Black)
                 }
             }
         }

@@ -153,7 +153,7 @@ fun HomeTopBar(notificationCount: Int, onNotificationsClick: () -> Unit, onEmerg
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         Icons.Default.Notifications, 
-                        contentDescription = "Meldingen",
+                        contentDescription = "Avisos",
                         modifier = Modifier.size(34.dp),
                         tint = if (notificationCount > 0) Color(0xFF6366F1) else Color.White.copy(alpha = 0.4f)
                     )
@@ -257,14 +257,14 @@ fun HomeStatusCard(
             Spacer(Modifier.width(24.dp))
             Column {
                 Text(
-                    "HERINNERING",
+                    "RECORDATORIO",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Black,
                     letterSpacing = 1.5.sp,
                     color = Color(0xFF10B981)
                 )
                 Text(
-                    "Nog $pendingMedsCount medicijnen", 
+                    "Faltan $pendingMedsCount medicamentos", 
                     fontSize = 22.sp, 
                     fontWeight = FontWeight.Black,
                     color = Color.White

@@ -44,10 +44,10 @@ fun SosContactSettingsScreen(onBack: () -> Unit) {
     var showAddDialog by remember { mutableStateOf(false) }
 
     Column(Modifier.fillMaxSize().background(Color(0xFF0F172A)).padding(horizontal = 12.dp, vertical = 8.dp)) {
-        ScreenHeader(title = "SOS Instellingen", onBack = onBack)
+        ScreenHeader(title = "Ajustes de emergencia", onBack = onBack)
         
         Text(
-            "Het eerste contact wordt direct gebeld bij nood.",
+            "Al primer contacto se le llama directamente en una emergencia.",
             modifier = Modifier.padding(bottom = 16.dp, start = 8.dp, end = 8.dp),
             fontSize = 18.sp,
             lineHeight = 24.sp,
@@ -64,9 +64,9 @@ fun SosContactSettingsScreen(onBack: () -> Unit) {
                         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEF4444).copy(alpha = 0.3f))
                     ) {
                         Column(Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("⚠️ Geen contacten", fontSize = 22.sp, fontWeight = FontWeight.Black, color = Color(0xFFEF4444))
+                            Text("⚠️ Sin contactos", fontSize = 22.sp, fontWeight = FontWeight.Black, color = Color(0xFFEF4444))
                             Spacer(Modifier.height(8.dp))
-                            Text("Voeg minimaal één persoon toe die we kunnen waarschuwen.", textAlign = androidx.compose.ui.text.style.TextAlign.Center, color = Color.White)
+                            Text("Agregue al menos una persona a quien podamos llamar.", textAlign = androidx.compose.ui.text.style.TextAlign.Center, color = Color.White)
                         }
                     }
                 }
@@ -93,7 +93,7 @@ fun SosContactSettingsScreen(onBack: () -> Unit) {
                                 dao.delete(contact) // Verwijder volledig uit SOS lijst
                             }
                         }) {
-                            Icon(Icons.Default.Delete, "Verwijder", tint = Color.White.copy(alpha = 0.3f), modifier = Modifier.size(32.dp))
+                            Icon(Icons.Default.Delete, "Eliminar", tint = Color.White.copy(alpha = 0.3f), modifier = Modifier.size(32.dp))
                         }
                     }
                 }
@@ -108,7 +108,7 @@ fun SosContactSettingsScreen(onBack: () -> Unit) {
         ) {
             Icon(Icons.Default.PersonAdd, null, modifier = Modifier.size(32.dp))
             Spacer(Modifier.width(12.dp))
-            Text("IEMAND TOEVOEGEN", fontSize = 22.sp, fontWeight = FontWeight.Black)
+            Text("AGREGAR A ALGUIEN", fontSize = 22.sp, fontWeight = FontWeight.Black)
         }
     }
 
@@ -177,7 +177,7 @@ fun SosContactPickerDialog(onDismiss: () -> Unit, onContactSelected: (String, St
     Dialog(onDismissRequest = onDismiss) {
         Card(Modifier.fillMaxWidth().fillMaxHeight(0.9f), shape = RoundedCornerShape(28.dp)) {
             Column(Modifier.padding(20.dp)) {
-                Text("Wie wilt u toevoegen?", fontSize = 24.sp, fontWeight = FontWeight.Black)
+                Text("¿A quién desea agregar?", fontSize = 24.sp, fontWeight = FontWeight.Black)
                 
                 Spacer(Modifier.height(16.dp))
                 
@@ -185,7 +185,7 @@ fun SosContactPickerDialog(onDismiss: () -> Unit, onContactSelected: (String, St
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("Zoek op naam...") },
+                    placeholder = { Text("Busque por nombre...") },
                     leadingIcon = { Icon(Icons.Default.Search, null) },
                     shape = RoundedCornerShape(16.dp),
                     singleLine = true
@@ -207,7 +207,7 @@ fun SosContactPickerDialog(onDismiss: () -> Unit, onContactSelected: (String, St
                 ) {
                     Icon(Icons.Default.Add, null)
                     Spacer(Modifier.width(8.dp))
-                    Text("NIEUW CONTACT MAKEN", fontWeight = FontWeight.Bold)
+                    Text("CREAR NUEVO CONTACTO", fontWeight = FontWeight.Bold)
                 }
 
                 Spacer(Modifier.height(16.dp))
@@ -237,7 +237,7 @@ fun SosContactPickerDialog(onDismiss: () -> Unit, onContactSelected: (String, St
                 }
                 
                 TextButton(onClick = onDismiss, modifier = Modifier.align(Alignment.End).padding(top = 8.dp)) {
-                    Text("ANNULEREN", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text("CANCELAR", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }

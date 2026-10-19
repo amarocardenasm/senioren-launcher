@@ -124,15 +124,15 @@ fun SettingsScreenContent(
     }
 
     Column(Modifier.fillMaxSize().background(Color(0xFF0F172A)).padding(horizontal = 16.dp, vertical = 8.dp)) {
-        ScreenHeader(title = "Beheer & Instellingen", onBack = onBack)
+        ScreenHeader(title = "Ajustes", onBack = onBack)
         
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()), 
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             // --- GROEP 1: SCHERM & STIJL ---
-            SettingsGroup(title = "📺 Scherm & Stijl", icon = Icons.Default.Palette) {
-                Text("Kleurthema", fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp))
+            SettingsGroup(title = "📺 Pantalla y estilo", icon = Icons.Default.Palette) {
+                Text("Tema de colores", fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     AppTheme.entries.forEach { t ->
                         val selected = settings.theme == t
@@ -158,9 +158,9 @@ fun SettingsScreenContent(
                             Box(Modifier.size(24.dp).background(if (t == AppTheme.LIGHT) Color.Black else Color.White, CircleShape))
                             Text(
                                 text = when(t){ 
-                                    AppTheme.CLASSIC -> "Klassiek"
-                                    AppTheme.HIGH_CONTRAST -> "Contrast"
-                                    AppTheme.LIGHT -> "Licht" 
+                                    AppTheme.CLASSIC -> "Clásico"
+                                    AppTheme.HIGH_CONTRAST -> "Contraste"
+                                    AppTheme.LIGHT -> "Claro" 
                                 },
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.SemiBold,
@@ -172,9 +172,9 @@ fun SettingsScreenContent(
                 
                 Spacer(Modifier.height(16.dp))
 
-                Text("Knoppen indeling", fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp))
+                Text("Tamaño de los botones", fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf(LayoutType.GRID_2x3 to "Groot", LayoutType.GRID_3x4 to "Compact", LayoutType.GRID_1x1 to "Enorm").forEach { (type, label) ->
+                    listOf(LayoutType.GRID_2x3 to "Grande", LayoutType.GRID_3x4 to "Compacto", LayoutType.GRID_1x1 to "Enorme").forEach { (type, label) ->
                         val selected = settings.layout == type
                         Button(
                             onClick = { 
@@ -192,7 +192,7 @@ fun SettingsScreenContent(
 
                 Spacer(Modifier.height(16.dp))
 
-                Text("Tekstgrootte", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text("Tamaño del texto", fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("A", fontSize = 16.sp)
                     Slider(
@@ -204,37 +204,16 @@ fun SettingsScreenContent(
                     Text("A", fontSize = 32.sp, fontWeight = FontWeight.Bold)
                 }
                 
-                SettToggle("Automatische Nachtmodus", settings.nightModeAuto) { 
+                SettToggle("Modo noche automático", settings.nightModeAuto) { 
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     onToggleNightMode() 
                 }
             }
 
             // --- GROEP 2: APPS & TAAL ---
-            SettingsGroup(title = "🌍 Apps & Taal", icon = Icons.Default.Language) {
-                Text("Taal", fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp))
-                val languages = listOf("nl" to "Nederlands", "en" to "English", "fr" to "Français", "de" to "Deutsch")
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    languages.forEach { (code, name) ->
-                        val selected = settings.language == code
-                        Button(
-                            onClick = { 
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                onUpdateLanguage(code) 
-                            },
-                            modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(20.dp),
-                            colors = if (selected) ButtonDefaults.buttonColors() else ButtonDefaults.filledTonalButtonColors(),
-                            contentPadding = PaddingValues(4.dp)
-                        ) {
-                            Text(name, fontSize = 12.sp)
-                        }
-                    }
-                }
+            SettingsGroup(title = "🌍 Aplicaciones", icon = Icons.Default.Language) {
 
-                Spacer(Modifier.height(16.dp))
-
-                Text("Zichtbare Apps", fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp))
+                Text("Aplicaciones visibles", fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp))
                 ALL_APPS.filter { it.id != "settings" && it.id != "all_apps" }.forEach { app ->
                     SettToggle("${app.emoji} ${app.name}", app.id in settings.visibleApps) { 
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -244,29 +223,29 @@ fun SettingsScreenContent(
             }
 
             // --- GROEP 3: VEILIGHEID & NOODHULP ---
-            SettingsGroup(title = "🛡️ Veiligheid & Noodhulp", icon = Icons.Default.Security) {
-                SettRow("🏥 Medische Noodinfo bewerken") { 
+            SettingsGroup(title = "🛡️ Seguridad y emergencias", icon = Icons.Default.Security) {
+                SettRow("🏥 Editar ficha médica") { 
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     onNavigate("emergency") 
                 }
                 HorizontalDivider(Modifier.padding(vertical = 8.dp), thickness = 0.5.dp)
-                SettRow("🆘 SOS Contacten instellen") { 
+                SettRow("🆘 Configurar contactos de emergencia") { 
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     onNavigate("sos_settings") 
                 }
                 HorizontalDivider(Modifier.padding(vertical = 8.dp), thickness = 0.5.dp)
-                SettToggle("⚠️ Valdetectie", settings.fallDetectionEnabled) { 
+                SettToggle("⚠️ Detección de caídas", settings.fallDetectionEnabled) { 
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     onToggleFallDetection() 
                 }
-                SettToggle("🔌 Oplaadherinnering (22:00)", settings.chargingReminderEnabled) { 
+                SettToggle("🔌 Recordatorio de carga (22:00)", settings.chargingReminderEnabled) { 
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     onToggleChargingReminder() 
                 }
             }
 
             // --- GROEP 4: SYSTEEM & BEHEER ---
-            SettingsGroup(title = "⚙️ Systeem & Beheer", icon = Icons.Default.Build) {
+            SettingsGroup(title = "⚙️ Sistema", icon = Icons.Default.Build) {
                 Spacer(Modifier.height(16.dp))
                 
                 Button(
@@ -280,47 +259,22 @@ fun SettingsScreenContent(
                 ) {
                     Icon(Icons.Default.Lock, null)
                     Spacer(Modifier.width(12.dp))
-                    Text("MENU VERGRENDELEN", fontWeight = FontWeight.Black, fontSize = 18.sp)
+                    Text("BLOQUEAR MENÚ", fontWeight = FontWeight.Black, fontSize = 18.sp)
                 }
             }
 
             // --- GROEP 5: OVER & PRIVACY ---
-            SettingsGroup(title = "ℹ️ Over & Privacy", icon = Icons.Default.Info) {
+            SettingsGroup(title = "ℹ️ Acerca de y privacidad", icon = Icons.Default.Info) {
                 Text(
-                    "Senioren Launcher is een open-source initiatief om digitale inclusie te bevorderen, met speciale aandacht voor de noden van senioren in Gent. Wij respecteren uw privacy volledig.",
+                    "Senior Launcher es una iniciativa de código abierto para facilitar el uso del celular a las personas mayores. Respetamos plenamente su privacidad.",
                     fontSize = 16.sp,
                     lineHeight = 22.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(Modifier.height(12.dp))
-                SettRow("🛡️ Privacy & AVG Details") {
+                SettRow("🛡️ Detalles de privacidad") {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     onNavigate("privacy")
-                }
-            }
-
-            // --- GROEP 6: WAARDERING & TOEKOMST ---
-            SettingsGroup(title = "❤️ Waardering", icon = Icons.Default.Favorite) {
-                Text(
-                    "Dit is een open-source project gebouwd met liefde voor onze ouderen. Uw steun helpt bij het dekken van de kosten en het verder verbeteren van de app.",
-                    fontSize = 16.sp,
-                    lineHeight = 22.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(Modifier.height(16.dp))
-                Button(
-                    onClick = {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.paypal.com/donate/?business=amine.chtaiti@gmail.com&no_recurring=0&currency_code=EUR"))
-                        context.startActivity(intent)
-                    },
-                    modifier = Modifier.fillMaxWidth().height(80.dp),
-                    shape = RoundedCornerShape(40.dp),
-                    colors = ButtonDefaults.filledTonalButtonColors()
-                ) {
-                    Icon(Icons.Default.VolunteerActivism, null) // VolunteerActivism acts as a nice "heart in hand" icon
-                    Spacer(Modifier.width(12.dp))
-                    Text("STEUN HET PROJECT", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 }
             }
 
@@ -382,10 +336,10 @@ fun LockedSettingsScreen(onBack: () -> Unit, onUnlockClick: () -> Unit) {
     ) {
         Icon(Icons.Default.Lock, null, modifier = Modifier.size(120.dp), tint = MaterialTheme.colorScheme.primary)
         Spacer(Modifier.height(32.dp))
-        Text("Instellingen Vergrendeld", fontSize = 32.sp, fontWeight = FontWeight.Black, textAlign = TextAlign.Center, color = Color.White)
+        Text("Ajustes bloqueados", fontSize = 32.sp, fontWeight = FontWeight.Black, textAlign = TextAlign.Center, color = Color.White)
         Spacer(Modifier.height(16.dp))
         Text(
-            "Dit menu is beveiligd om te voorkomen dat instellingen per ongeluk worden gewijzigd.", 
+            "Este menú está protegido para evitar cambios accidentales.", 
             fontSize = 20.sp, 
             textAlign = TextAlign.Center,
             color = Color.White.copy(alpha = 0.7f)
@@ -396,10 +350,10 @@ fun LockedSettingsScreen(onBack: () -> Unit, onUnlockClick: () -> Unit) {
             shape = RoundedCornerShape(40.dp),
             modifier = Modifier.fillMaxWidth().height(90.dp)
         ) {
-            Text("PINCODE INVOEREN", fontSize = 24.sp, fontWeight = FontWeight.Black)
+            Text("INGRESAR CLAVE", fontSize = 24.sp, fontWeight = FontWeight.Black)
         }
         TextButton(onClick = onBack, modifier = Modifier.padding(top = 24.dp)) {
-            Text("TERUG NAAR START", fontSize = 20.sp, fontWeight = FontWeight.Black, color = Color.White.copy(alpha = 0.7f))
+            Text("VOLVER AL INICIO", fontSize = 20.sp, fontWeight = FontWeight.Black, color = Color.White.copy(alpha = 0.7f))
         }
     }
 }
@@ -411,7 +365,7 @@ fun PinEntryScreen(pin: String, onPinChange: (String) -> Unit, onCancel: () -> U
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("Beheerders PIN", fontSize = 28.sp, fontWeight = FontWeight.Black, color = Color.White)
+        Text("Clave de ajustes", fontSize = 28.sp, fontWeight = FontWeight.Black, color = Color.White)
         Spacer(Modifier.height(32.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             repeat(4) { i ->
@@ -456,7 +410,7 @@ fun PinEntryScreen(pin: String, onPinChange: (String) -> Unit, onCancel: () -> U
         }
         Spacer(Modifier.height(32.dp))
         TextButton(onClick = onCancel) {
-            Text("ANNULEREN", fontSize = 22.sp, fontWeight = FontWeight.Black, color = Color(0xFFEF4444))
+            Text("CANCELAR", fontSize = 22.sp, fontWeight = FontWeight.Black, color = Color(0xFFEF4444))
         }
     }
 }

@@ -64,7 +64,7 @@ fun NotificationsScreen(onBack: () -> Unit, onNavigate: (String) -> Unit) {
             .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 12.dp, vertical = 8.dp)
     ) {
-        ScreenHeader(title = "Berichten & Herinneringen", onBack = onBack)
+        ScreenHeader(title = "Mensajes y recordatorios", onBack = onBack)
 
         if (!hasPermission) {
             PermissionRequiredScreen()
@@ -74,7 +74,7 @@ fun NotificationsScreen(onBack: () -> Unit, onNavigate: (String) -> Unit) {
             if (grouped.isEmpty()) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
-                        "Geen nieuwe berichten",
+                        "No hay mensajes nuevos",
                         fontSize = 22.sp,
                         color = Color.Gray,
                         textAlign = TextAlign.Center
@@ -109,7 +109,7 @@ fun NotificationsScreen(onBack: () -> Unit, onNavigate: (String) -> Unit) {
                         ) {
                             Icon(Icons.Default.Delete, contentDescription = null)
                             Spacer(Modifier.width(12.dp))
-                            Text("ALLES WISSEN", fontSize = 20.sp, fontWeight = FontWeight.Black)
+                            Text("BORRAR TODO", fontSize = 20.sp, fontWeight = FontWeight.Black)
                         }
                     }
                 }
@@ -120,8 +120,8 @@ fun NotificationsScreen(onBack: () -> Unit, onNavigate: (String) -> Unit) {
     if (showClearConfirm) {
         AlertDialog(
             onDismissRequest = { showClearConfirm = false },
-            title = { Text("Alle meldingen wissen?", fontSize = 22.sp, fontWeight = FontWeight.Bold) },
-            text = { Text("Weet u zeker dat u alle meldingen wilt verwijderen? U kunt dit niet ongedaan maken.", fontSize = 18.sp) },
+            title = { Text("¿Borrar todos los avisos?", fontSize = 22.sp, fontWeight = FontWeight.Bold) },
+            text = { Text("¿Está seguro de que desea borrar todos los avisos? No se puede deshacer.", fontSize = 18.sp) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -130,12 +130,12 @@ fun NotificationsScreen(onBack: () -> Unit, onNavigate: (String) -> Unit) {
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Text("Ja, wis alles", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text("Sí, borrar todo", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showClearConfirm = false }) {
-                    Text("Nee, terug", fontSize = 18.sp)
+                    Text("No, volver", fontSize = 18.sp)
                 }
             },
             shape = RoundedCornerShape(20.dp)
@@ -159,14 +159,14 @@ fun PermissionRequiredScreen() {
         )
         Spacer(Modifier.height(24.dp))
         Text(
-            "Toegang nodig",
+            "Se necesita permiso",
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center
         )
         Spacer(Modifier.height(16.dp))
         Text(
-            "Om uw berichten van WhatsApp, SMS en andere apps hier te tonen, hebben we toestemming nodig.",
+            "Para mostrar aquí sus mensajes de WhatsApp, SMS y otras apps, necesitamos su permiso.",
             fontSize = 20.sp,
             textAlign = TextAlign.Center,
             lineHeight = 28.sp
@@ -179,7 +179,7 @@ fun PermissionRequiredScreen() {
             modifier = Modifier.fillMaxWidth().height(70.dp),
             shape = RoundedCornerShape(16.dp)
         ) {
-            Text("Instellingen openen", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Text("Abrir ajustes", fontSize = 20.sp, fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -219,7 +219,7 @@ fun NotificationGroupCard(
                 IconButton(onClick = {
                     group.items.forEach { NotificationListener.dismiss(it.key) }
                 }) {
-                    Icon(Icons.Default.Close, "Wis groep", tint = Color.Gray)
+                    Icon(Icons.Default.Close, "Borrar grupo", tint = Color.Gray)
                 }
             }
             
@@ -229,7 +229,7 @@ fun NotificationGroupCard(
                 Column(Modifier.weight(1f)) {
                     Text(
                         text = if (group.items.size > 1) {
-                            "${group.items.size} nieuwe berichten"
+                            "${group.items.size} mensajes nuevos"
                         } else {
                             group.items.first().title
                         },
@@ -276,7 +276,7 @@ fun NotificationGroupCard(
                                 Text(item.text, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                             IconButton(onClick = { NotificationListener.dismiss(item.key) }) {
-                                Icon(Icons.Default.Close, contentDescription = "Wis", modifier = Modifier.size(20.dp))
+                                Icon(Icons.Default.Close, contentDescription = "Borrar", modifier = Modifier.size(20.dp))
                             }
                         }
                     }
