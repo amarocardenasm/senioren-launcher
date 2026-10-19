@@ -139,7 +139,7 @@ fun SystemPermissionsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) 
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(
-                    text = "Atención: si aparece "Ajuste restringido", vuelva atrás, mantenga presionada la app → Información de la app → 3 puntos → Permitir ajustes restringidos.",
+                    text = "Atención: si aparece “Ajuste restringido”, vuelva atrás, mantenga presionada la app → Información de la app → 3 puntos → Permitir ajustes restringidos.",
                     modifier = Modifier.padding(12.dp),
                     fontSize = 12.sp,
                     lineHeight = 16.sp,

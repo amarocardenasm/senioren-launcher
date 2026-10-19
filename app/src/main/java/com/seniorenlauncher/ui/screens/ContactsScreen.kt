@@ -88,7 +88,7 @@ fun ContactsScreen(onBack: () -> Unit, settingsVm: SettingsViewModel = viewModel
         if (contacts.isEmpty()) {
             Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 Text(
-                    "No hay contactos favoritos.\nToque "Nuevo" para agregar uno.",
+                    "No hay contactos favoritos.\nToque “Nuevo” para agregar uno.",
                     textAlign = TextAlign.Center,
                     fontSize = 18.sp,
                     color = Color.Gray

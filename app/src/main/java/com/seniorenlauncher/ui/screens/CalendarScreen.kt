@@ -154,7 +154,7 @@ fun CalendarScreen(onBack: () -> Unit) {
                 Row(Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Warning, null, tint = Color(0xFFEF4444), modifier = Modifier.size(32.dp))
                     Spacer(Modifier.width(16.dp))
-                    Text("Active "Mostrar sobre otras apps" para las alarmas.", fontSize = 16.sp, fontWeight = FontWeight.Black, color = Color.White)
+                    Text("Active “Mostrar sobre otras apps” para las alarmas.", fontSize = 16.sp, fontWeight = FontWeight.Black, color = Color.White)
                 }
             }
         }
@@ -204,7 +204,7 @@ fun CalendarScreen(onBack: () -> Unit) {
                                 AlertDialog(
                                     onDismissRequest = { showDeleteConfirm = false },
                                     title = { Text("¿Eliminar?") },
-                                    text = { Text("¿Desea eliminar "${event.title}"?") },
+                                    text = { Text("¿Desea eliminar “${event.title}”?") },
                                     confirmButton = {
                                         Button(onClick = {
                                             scope.launch(Dispatchers.IO) {
