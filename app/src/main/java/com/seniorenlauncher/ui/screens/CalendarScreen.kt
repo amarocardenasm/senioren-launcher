@@ -195,7 +195,7 @@ fun CalendarScreen(onBack: () -> Unit) {
                                     isTomorrow(event.startTime) -> "Mañana"
                                     else -> SimpleDateFormat("EEEE d MMMM", localeNl).format(Date(event.startTime))
                                 }
-                                val timeMsg = if (event.isAllDay) "todo el día" else "om " + SimpleDateFormat("HH:mm", localeNl).format(Date(event.startTime))
+                                val timeMsg = if (event.isAllDay) "todo el día" else "a las " + SimpleDateFormat("HH:mm", localeNl).format(Date(event.startTime))
                                 val msg = "$dayPrefix, $timeMsg. ${event.title}"
                                 tts?.speak(msg, TextToSpeech.QUEUE_FLUSH, null, "EventID")
                             }, onLongClick = { showDeleteConfirm = true })

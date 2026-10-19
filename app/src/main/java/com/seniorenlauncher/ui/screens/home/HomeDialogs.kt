@@ -484,7 +484,7 @@ fun WifiDialog(
                     border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f)),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
                 ) {
-                    Text("TERUG", fontSize = 18.sp, fontWeight = FontWeight.Black)
+                    Text("VOLVER", fontSize = 18.sp, fontWeight = FontWeight.Black)
                 }
             }
         }
@@ -640,7 +640,7 @@ fun BluetoothDialog(
                     border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f)),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
                 ) {
-                    Text("TERUG", fontSize = 18.sp, fontWeight = FontWeight.Black)
+                    Text("VOLVER", fontSize = 18.sp, fontWeight = FontWeight.Black)
                 }
             }
         }
