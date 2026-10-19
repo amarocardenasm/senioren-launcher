@@ -43,24 +43,12 @@ fun DefaultAppsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
     val context = LocalContext.current
     
     var isDefaultHome by remember { mutableStateOf(false) }
-    var isDefaultDialer by remember { mutableStateOf(false) }
-    var isDefaultSms by remember { mutableStateOf(false) }
 
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
             if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
                 isDefaultHome = isLauncherDefault(context)
-                
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    val roleManager = context.getSystemService(Context.ROLE_SERVICE) as RoleManager
-                    isDefaultDialer = roleManager.isRoleHeld(RoleManager.ROLE_DIALER)
-                    isDefaultSms = roleManager.isRoleHeld(RoleManager.ROLE_SMS)
-                } else {
-                    val telecomManager = context.getSystemService(Context.TELECOM_SERVICE) as TelecomManager
-                    isDefaultDialer = telecomManager.defaultDialerPackage == context.packageName
-                    isDefaultSms = Telephony.Sms.getDefaultSmsPackage(context) == context.packageName
-                }
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -71,7 +59,7 @@ fun DefaultAppsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
 
     val roleLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
 
-    val allDone = isDefaultHome && isDefaultDialer && isDefaultSms
+    val allDone = isDefaultHome
 
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp).verticalScroll(rememberScrollState()),
@@ -89,8 +77,8 @@ fun DefaultAppsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
         
         Text(
             text = if (isSenior) 
-                "We maken de Senioren Launcher uw vaste hulp voor bellen en berichten. Klik op de rode vakken."
-                else "Stel de launcher in als standaard for Home, Telefoon en SMS om de stabiliteit te garanderen.",
+                "We maken de Senioren Launcher uw vaste startscherm. Klik op de rode vakken."
+                else "Stel de launcher in als standaard voor Home om de stabiliteit te garanderen.",
             fontSize = if (isSenior) 22.sp else 18.sp, 
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -111,50 +99,6 @@ fun DefaultAppsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 }
                 context.startActivity(intent)
-            }
-        )
-
-        Spacer(Modifier.height(16.dp))
-
-        DefaultAppRow(
-            title = if (isSenior) "2. Telefoon knop" else "Telefoon (Bellen)",
-            description = if (isSenior) "Om makkelijk uw familie te kunnen bellen." else "Nodig voor de versimpelde bel-interface.",
-            isGranted = isDefaultDialer,
-            icon = Icons.Default.Phone,
-            isSenior = isSenior,
-            onClick = {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    val roleManager = context.getSystemService(Context.ROLE_SERVICE) as RoleManager
-                    val intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_DIALER)
-                    roleLauncher.launch(intent)
-                } else {
-                    val intent = Intent(TelecomManager.ACTION_CHANGE_DEFAULT_DIALER).apply {
-                        putExtra(TelecomManager.EXTRA_CHANGE_DEFAULT_DIALER_PACKAGE_NAME, context.packageName)
-                    }
-                    roleLauncher.launch(intent)
-                }
-            }
-        )
-
-        Spacer(Modifier.height(16.dp))
-
-        DefaultAppRow(
-            title = if (isSenior) "3. Berichten knop" else "Berichten (SMS)",
-            description = if (isSenior) "Zodat u veilig berichten kunt ontvangen." else "Nodig voor SOS en batterijmeldingen.",
-            isGranted = isDefaultSms,
-            icon = Icons.Default.Sms,
-            isSenior = isSenior,
-            onClick = {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    val roleManager = context.getSystemService(Context.ROLE_SERVICE) as RoleManager
-                    val intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_SMS)
-                    roleLauncher.launch(intent)
-                } else {
-                    val intent = Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT).apply {
-                        putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME, context.packageName)
-                    }
-                    roleLauncher.launch(intent)
-                }
             }
         )
 
@@ -435,7 +379,6 @@ fun FallDetectionSetupScreen(onNext: () -> Unit, settingsVm: SettingsViewModel) 
 @Composable
 fun SecuritySetupScreen(onNext: () -> Unit, settingsVm: SettingsViewModel) {
     var pin by remember { mutableStateOf("") }
-    var remoteSupportEnabled by remember { mutableStateOf(true) }
 
     Column(
         modifier = Modifier
@@ -473,28 +416,6 @@ fun SecuritySetupScreen(onNext: () -> Unit, settingsVm: SettingsViewModel) {
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     visualTransformation = PasswordVisualTransformation(),
                     shape = RoundedCornerShape(12.dp)
-                )
-            }
-        }
-        
-        Spacer(Modifier.height(24.dp))
-        
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
-        ) {
-            Row(
-                modifier = Modifier.padding(20.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(Modifier.weight(1f)) {
-                    Text("Hulp op afstand", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                    Text("Maakt meekijken via RustDesk mogelijk.", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-                Switch(
-                    checked = remoteSupportEnabled,
-                    onCheckedChange = { remoteSupportEnabled = it }
                 )
             }
         }

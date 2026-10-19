@@ -71,19 +71,18 @@ object AppLauncher {
         }
     }
 
-    fun startRemoteSupport(context: Context) {
-        val packageName = "com.carriez.flutter_hbb"
+    /** Abre la app de mensajes predeterminada del celular (no una propia). */
+    fun openMessages(context: Context, address: String? = null) {
         try {
-            val pm = context.packageManager
-            val intent = pm.getLaunchIntentForPackage(packageName)
-            if (intent != null) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(intent)
+            val intent = if (!address.isNullOrBlank()) {
+                Intent(Intent.ACTION_SENDTO, android.net.Uri.parse("smsto:" + android.net.Uri.encode(address)))
             } else {
-                Toast.makeText(context, "RustDesk niet gevonden", Toast.LENGTH_LONG).show()
+                Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_APP_MESSAGING)
             }
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent)
         } catch (e: Exception) {
-            Log.e("AppLauncher", "Error starting remote support", e)
+            Toast.makeText(context, "No se encontro la app de mensajes", Toast.LENGTH_LONG).show()
         }
     }
 

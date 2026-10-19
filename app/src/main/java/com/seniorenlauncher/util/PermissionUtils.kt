@@ -27,8 +27,7 @@ object PermissionUtils {
     fun hasSosPermissions(context: Context): Boolean {
         val basePermissions = mutableListOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.CALL_PHONE,
-            Manifest.permission.SEND_SMS
+            Manifest.permission.CALL_PHONE
         )
         
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
@@ -43,8 +42,7 @@ object PermissionUtils {
     fun getRequiredSosPermissions(): List<String> {
         val perms = mutableListOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.CALL_PHONE,
-            Manifest.permission.SEND_SMS
+            Manifest.permission.CALL_PHONE
         )
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             perms.add(Manifest.permission.FOREGROUND_SERVICE_LOCATION)

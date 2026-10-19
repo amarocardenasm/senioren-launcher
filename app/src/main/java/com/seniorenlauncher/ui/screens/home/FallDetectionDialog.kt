@@ -47,7 +47,7 @@ fun FallDetectionDialog(
     if (!hasPermission) {
         PermissionRequestDialog(
             title = "SOS Toegang",
-            description = "Om hulp te kunnen inschakelen bij een val hebben we toestemming nodig voor locatie, bellen en SMS.",
+            description = "Om hulp te kunnen inschakelen bij een val hebben we toestemming nodig voor locatie en bellen.",
             onDismiss = onCancel,
             onGrant = {
                 permissionLauncher.launch(PermissionUtils.getRequiredSosPermissions().toTypedArray())

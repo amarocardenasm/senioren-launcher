@@ -91,7 +91,6 @@ class LauncherApp : Application() {
             smsChannel,
             alarmChannel,
             calendarChannel,
-            NotificationChannel(CH_RADIO, "Radio Speler", NotificationManager.IMPORTANCE_LOW),
             NotificationChannel(CH_BATTERY, "Batterij", NotificationManager.IMPORTANCE_DEFAULT),
             NotificationChannel(CH_GENERAL, "Algemeen", NotificationManager.IMPORTANCE_DEFAULT)
         ))
@@ -104,7 +103,6 @@ class LauncherApp : Application() {
         const val CH_ALARM = "alarm_channel_v3"
         const val CH_SMS = "sms_v5"
         const val CH_CALENDAR = "calendar_reminder_channel_v5"
-        const val CH_RADIO = "radio_channel"
         const val CH_BATTERY = "battery_channel"
         const val CH_GENERAL = "general_channel"
     }

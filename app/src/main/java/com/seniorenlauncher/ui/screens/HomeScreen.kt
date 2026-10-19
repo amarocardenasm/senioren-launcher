@@ -20,7 +20,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.seniorenlauncher.LauncherApp
 import com.seniorenlauncher.data.model.*
 import com.seniorenlauncher.service.NotificationListener
-import com.seniorenlauncher.service.SOSService
 import com.seniorenlauncher.ui.components.*
 import com.seniorenlauncher.ui.screens.home.*
 import com.seniorenlauncher.ui.theme.SeniorenLauncherTheme
@@ -50,7 +49,6 @@ fun HomeScreen(onNavigate: (String) -> Unit, settingsVm: SettingsViewModel) {
     var showPinDialogForSettings by remember { mutableStateOf(false) }
     var showWifiDialog by remember { mutableStateOf(false) }
     var showBluetoothDialog by remember { mutableStateOf(false) }
-    var showSOSCountdown by remember { mutableStateOf(false) }
 
     HomeScreenContent(
         settings = uiState.settings,
@@ -64,7 +62,7 @@ fun HomeScreen(onNavigate: (String) -> Unit, settingsVm: SettingsViewModel) {
         onSettingsClick = { showPinDialogForSettings = true },
         onWifiClick = { showWifiDialog = true },
         onBluetoothClick = { showBluetoothDialog = true },
-        onSOSClick = { showSOSCountdown = true }
+        onEmergencyHold = { onNavigate("emergency_numbers") }
     )
 
     if (showAppPickerFor != null) {
@@ -106,17 +104,6 @@ fun HomeScreen(onNavigate: (String) -> Unit, settingsVm: SettingsViewModel) {
     if (showBluetoothDialog) {
         BluetoothDialog(onDismiss = { showBluetoothDialog = false })
     }
-
-    if (showSOSCountdown) {
-        SOSCountdownDialog(
-            onDismiss = { showSOSCountdown = false },
-            onConfirm = {
-                showSOSCountdown = false
-                val intent = Intent(context, SOSService::class.java)
-                context.startForegroundService(intent)
-            }
-        )
-    }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -133,7 +120,7 @@ fun HomeScreenContent(
     onSettingsClick: () -> Unit,
     onWifiClick: () -> Unit,
     onBluetoothClick: () -> Unit,
-    onSOSClick: () -> Unit
+    onEmergencyHold: () -> Unit
 ) {
     val context = LocalContext.current
     
@@ -158,19 +145,6 @@ fun HomeScreenContent(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
-        bottomBar = {
-            // Fixed SOS Button at bottom
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp)
-                    .navigationBarsPadding()
-            ) {
-                HomeSOSButton(
-                    onClick = onSOSClick
-                )
-            }
-        }
     ) { innerPadding ->
         Column(
             Modifier
@@ -180,7 +154,8 @@ fun HomeScreenContent(
             // Top Bar: Clock, Battery & Notifications
             HomeTopBar(
                 notificationCount = activeNotificationsCount,
-                onNotificationsClick = { onNavigate("notifications") }
+                onNotificationsClick = { onNavigate("notifications") },
+                onEmergencyHold = onEmergencyHold
             )
 
             // Status Card: Alleen nog voor Medicijnen
@@ -228,7 +203,7 @@ fun HomeScreenContent(
                                     app.id == "camera" -> AppLauncher.openSystemCamera(context)
                                     app.id == "wifi" -> onWifiClick()
                                     app.id == "bluetooth" -> onBluetoothClick()
-                                    app.id == "remote_support" -> onNavigate("remote_support")
+                                    app.id == "sms" -> AppLauncher.openMessages(context)
                                     app.id == "settings" -> onSettingsClick()
                                     app.id.startsWith("mapped_") -> {
                                         val pkg = settings.appMappings[app.id]
@@ -287,7 +262,7 @@ fun PreviewHomeScreen() {
             onSettingsClick = {},
             onWifiClick = {},
             onBluetoothClick = {},
-            onSOSClick = {}
+            onEmergencyHold = {}
         )
     }
 }

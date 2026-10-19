@@ -336,7 +336,7 @@ fun handleNotificationClick(
     when {
         smsPackages.contains(packageName) -> {
             NotificationListener.dismiss(item.key) 
-            onNavigate("sms") // Gaat exact naar de eigen MessagesScreen
+            com.seniorenlauncher.util.AppLauncher.openMessages(context)
         }
         phonePackages.contains(packageName) -> {
             NotificationListener.dismiss(item.key)

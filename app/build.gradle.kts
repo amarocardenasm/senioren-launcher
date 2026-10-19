@@ -72,11 +72,9 @@ dependencies {
     implementation(libs.androidx.camera.camera2)
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
+    // CameraX usa ListenableFuture (Guava); antes llegaba de forma indirecta con Media3
+    implementation("com.google.guava:guava:33.4.0-android")
 
-    // Media3 for Radio Playback
-    implementation(libs.androidx.media3.exoplayer)
-    implementation(libs.androidx.media3.session)
-    implementation(libs.androidx.media3.ui)
 
     debugImplementation(libs.androidx.compose.ui.tooling)
 }

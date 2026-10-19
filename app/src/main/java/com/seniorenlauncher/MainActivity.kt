@@ -17,13 +17,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.seniorenlauncher.ui.AppNavigation
-import com.seniorenlauncher.ui.components.RadioMiniPlayer
 import com.seniorenlauncher.ui.screens.*
 import com.seniorenlauncher.ui.theme.SeniorenLauncherTheme
 import com.seniorenlauncher.ui.screens.home.*
-import com.seniorenlauncher.service.SeniorInCallService
-import com.seniorenlauncher.util.UpdateManager
-import android.telecom.Call
 import android.util.Log
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
@@ -35,8 +31,6 @@ class MainActivity : ComponentActivity() {
     private var alarmTriggered = mutableStateOf<String?>(null)
     private var alarmSoundUri = mutableStateOf<String?>(null)
     private var alarmIsRemote = mutableStateOf(false)
-    private var navigateToSmsAddress = mutableStateOf<String?>(null)
-    private var navigateToIncomingCall = mutableStateOf(false)
     private var navigateToWeatherAfterAlarm = mutableStateOf(false)
     private var fallDetectedTriggered = mutableStateOf(false)
 
@@ -69,31 +63,19 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val settingsVm: SettingsViewModel = viewModel()
-            val radioVm: RadioViewModel = viewModel()
             val settings by settingsVm.settings.collectAsState()
             
             val triggerLabel by alarmTriggered
             val alarmId by currentAlarmId
             val soundUri by alarmSoundUri
             val isRemote by alarmIsRemote
-            val smsAddress by navigateToSmsAddress
-            val showIncomingCall by navigateToIncomingCall
             val shouldNavToWeather by navigateToWeatherAfterAlarm
             val isFallDetected by fallDetectedTriggered
             
-            val currentCall by SeniorInCallService.currentCall.collectAsState()
-            
             var currentRoute by remember { mutableStateOf<String?>(null) }
 
-            // Auto-update check bij opstarten
             LaunchedEffect(Unit) {
-                val updateManager = UpdateManager(this@MainActivity)
-                val release = updateManager.checkForUpdates()
-                if (release != null) {
-                    updateManager.downloadAndInstall(release)
-                }
-
-                // Start stappenteller als we de permissie hebben
+                // Iniciar el contador de pasos si hay permiso
                 if (hasStepPermission()) {
                     startForegroundService(Intent(this@MainActivity, StepCounterService::class.java))
                 }
@@ -153,22 +135,9 @@ class MainActivity : ComponentActivity() {
                             Box(Modifier.weight(1f)) {
                                 AppNavigation(
                                     settingsVm = settingsVm, 
-                                    radioVm = radioVm, 
-                                    initialSmsAddress = smsAddress,
-                                    initialIncomingCall = showIncomingCall || (currentCall != null && currentCall?.state == Call.STATE_RINGING),
                                     initialWeatherNav = shouldNavToWeather,
-                                    onNavigatedToSms = { navigateToSmsAddress.value = null },
-                                    onNavigatedToCall = { navigateToIncomingCall.value = false },
                                     onNavigatedToWeather = { navigateToWeatherAfterAlarm.value = false },
                                     onRouteChanged = { currentRoute = it }
-                                )
-                            }
-                            if (currentRoute != "radio") {
-                                RadioMiniPlayer(
-                                    radioVm = radioVm,
-                                    onOpenRadio = {
-                                        // Optioneel: Navigeer naar radio
-                                    }
                                 )
                             }
                         }
@@ -219,10 +188,6 @@ class MainActivity : ComponentActivity() {
                 alarmSoundUri.value = it.getStringExtra("ALARM_SOUND")
             } else if (navigateTo == "fall_detected") {
                 fallDetectedTriggered.value = true
-            } else if (navigateTo == "sms") {
-                navigateToSmsAddress.value = it.getStringExtra("SMS_ADDRESS")
-            } else if (navigateTo == "incoming_call") {
-                navigateToIncomingCall.value = true
             }
         }
     }

@@ -68,33 +68,15 @@ import java.util.*
 
 data class DeviceContact(val name: String, val number: String, val photoUri: String? = null, val isMe: Boolean = false)
 
-data class CallLogEntry(
-    val number: String,
-    val name: String?,
-    val type: Int,
-    val date: Long,
-    val duration: Long
-)
-
 @Composable
 fun PhoneScreen(onNavigate: (String) -> Unit, onBack: () -> Unit, settingsVm: SettingsViewModel = viewModel()) {
     val localContext = LocalContext.current
     val scope = rememberCoroutineScope()
     val settings by settingsVm.settings.collectAsState()
     
-    val telecomManager = localContext.getSystemService(Context.TELECOM_SERVICE) as TelecomManager
-    var isDefaultDialer by remember { 
-        mutableStateOf(telecomManager.defaultDialerPackage == localContext.packageName) 
-    }
-
-    val roleLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        isDefaultDialer = telecomManager.defaultDialerPackage == localContext.packageName
-    }
-
     val requiredPermissions = arrayOf(
         Manifest.permission.CALL_PHONE,
-        Manifest.permission.READ_CONTACTS,
-        Manifest.permission.READ_CALL_LOG
+        Manifest.permission.READ_CONTACTS
     )
 
     var permissionsGranted by remember {
@@ -148,7 +130,6 @@ fun PhoneScreen(onNavigate: (String) -> Unit, onBack: () -> Unit, settingsVm: Se
             ScreenHeader(
                 title = when(activeTab) {
                     PhoneTab.Dialer -> "Telefoon"
-                    PhoneTab.Recents -> "Recent"
                     PhoneTab.Contacts -> "Contacten"
                 }, 
                 onBack = { 
@@ -157,16 +138,6 @@ fun PhoneScreen(onNavigate: (String) -> Unit, onBack: () -> Unit, settingsVm: Se
                 }
             )
             
-            if (!isDefaultDialer) {
-                DefaultDialerBanner {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        val roleManager = localContext.getSystemService(RoleManager::class.java)
-                        val intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_DIALER)
-                        roleLauncher.launch(intent)
-                    }
-                }
-            }
-
             // Android 17 Glass Tab Switcher
             Surface(
                 color = Color(0xFF1E293B).copy(alpha = 0.5f),
@@ -186,13 +157,6 @@ fun PhoneScreen(onNavigate: (String) -> Unit, onBack: () -> Unit, settingsVm: Se
                         isSelected = activeTab == PhoneTab.Dialer,
                         modifier = Modifier.weight(1f),
                         onClick = { activeTab = PhoneTab.Dialer }
-                    )
-                    PhoneTabButton(
-                        icon = Icons.Default.History,
-                        label = "RECENT",
-                        isSelected = activeTab == PhoneTab.Recents,
-                        modifier = Modifier.weight(1f),
-                        onClick = { activeTab = PhoneTab.Recents }
                     )
                     PhoneTabButton(
                         icon = Icons.Default.Person,
@@ -235,16 +199,8 @@ fun PhoneScreen(onNavigate: (String) -> Unit, onBack: () -> Unit, settingsVm: Se
                                 allContacts = allContacts,
                                 onNumberChange = { phoneNumber = it },
                                 onCall = { makeDirectCall(localContext, phoneNumber) },
-                                onSendMessage = { 
-                                    val trimmed = phoneNumber.trim()
-                                    if (trimmed.isNotEmpty()) {
-                                        onNavigate("sms?address=${Uri.encode(trimmed)}")
-                                    } else {
-                                        onNavigate("sms")
-                                    }
-                                }
+                                onSendMessage = { com.seniorenlauncher.util.AppLauncher.openMessages(localContext, phoneNumber.trim()) }
                             )
-                            PhoneTab.Recents -> RecentsList(onCall = { number -> makeDirectCall(localContext, number) })
                             PhoneTab.Contacts -> AllContactsList(
                                 favorieten = favorieten,
                                 initialContacts = allContacts,
@@ -273,7 +229,7 @@ fun PhoneScreen(onNavigate: (String) -> Unit, onBack: () -> Unit, settingsVm: Se
     }
 }
 
-enum class PhoneTab { Dialer, Recents, Contacts }
+enum class PhoneTab { Dialer, Contacts }
 
 @Composable
 fun PhoneTabButton(icon: ImageVector, label: String, isSelected: Boolean, modifier: Modifier, onClick: () -> Unit) {
@@ -325,7 +281,6 @@ fun DialerContent(
     onSendMessage: () -> Unit
 ) {
     val context = LocalContext.current
-    var showEmergencyConfirm by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
 
     Column(
@@ -448,57 +403,9 @@ fun DialerContent(
                 }
             }
 
-            // 112 Orb
-            val interactionSource112 = remember { MutableInteractionSource() }
-            val isPressed112 by interactionSource112.collectIsPressedAsState()
-            val scale112 by animateFloatAsState(
-                targetValue = if (isPressed112) 0.88f else 1f,
-                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-                label = "scale"
-            )
-            Surface(
-                onClick = { showEmergencyConfirm = true },
-                interactionSource = interactionSource112,
-                modifier = Modifier.size(80.dp).scale(scale112),
-                shape = CircleShape,
-                color = Color(0xFFEF4444), // Red
-                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f)),
-                shadowElevation = 8.dp
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Text("112", fontWeight = FontWeight.Black, fontSize = 24.sp, color = Color.White)
-                }
-            }
         }
         
         Spacer(Modifier.height(32.dp))
-    }
-
-    if (showEmergencyConfirm) {
-        AlertDialog(
-            onDismissRequest = { showEmergencyConfirm = false },
-            containerColor = Color(0xFF1E293B),
-            title = { Text("NOODNUMMER BELLEN?", color = Color.White, fontWeight = FontWeight.Black) },
-            text = { Text("Weet u zeker dat u 112 wilt bellen?", fontSize = 20.sp, color = Color.White.copy(alpha = 0.8f)) },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        showEmergencyConfirm = false
-                        makeDirectCall(context, "112")
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-                    modifier = Modifier.height(64.dp).fillMaxWidth(0.6f),
-                    shape = RoundedCornerShape(20.dp)
-                ) {
-                    Text("JA, BEL NU", fontWeight = FontWeight.Black, fontSize = 20.sp)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showEmergencyConfirm = false }) {
-                    Text("ANNULEREN", fontSize = 18.sp, color = Color.White)
-                }
-            }
-        )
     }
 }
 
@@ -538,79 +445,7 @@ fun DialerButton(text: String, onClick: () -> Unit) {
     }
 }
 
-@Composable
-fun RecentsList(onCall: (String) -> Unit) {
-    val context = LocalContext.current
-    var recents by remember { mutableStateOf(emptyList<CallLogEntry>()) }
-    var isLoading by remember { mutableStateOf(true) }
 
-    LaunchedEffect(Unit) {
-        recents = fetchCallLog(context)
-        isLoading = false
-    }
-
-    if (isLoading) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-        }
-    } else {
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp), contentPadding = PaddingValues(bottom = 24.dp)) {
-            items(recents) { entry ->
-                CallLogItem(entry, onClick = { onCall(entry.number) })
-            }
-        }
-    }
-}
-
-@Composable
-fun CallLogItem(entry: CallLogEntry, onClick: () -> Unit) {
-    val icon = when (entry.type) {
-        CallLog.Calls.MISSED_TYPE -> Icons.Default.CallMissed
-        CallLog.Calls.INCOMING_TYPE -> Icons.Default.CallReceived
-        else -> Icons.Default.CallMade
-    }
-    val iconColor = if (entry.type == CallLog.Calls.MISSED_TYPE) Color(0xFFEF4444) else Color(0xFF10B981)
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.96f else 1f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-        label = "scale"
-    )
-
-    Surface(
-        onClick = onClick,
-        interactionSource = interactionSource,
-        shape = RoundedCornerShape(40.dp),
-        color = Color(0xFF1E293B).copy(alpha = 0.5f),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f)),
-        modifier = Modifier.fillMaxWidth().scale(scale)
-    ) {
-        Row(Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                Modifier.size(56.dp).background(iconColor.copy(alpha = 0.1f), CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(icon, null, tint = iconColor, modifier = Modifier.size(32.dp))
-            }
-            Spacer(Modifier.width(20.dp))
-            Column(Modifier.weight(1f)) {
-                Text(
-                    text = entry.name ?: entry.number,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Black,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = "${formatCallTime(entry.date)} • ${entry.number}",
-                    fontSize = 15.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Icon(Icons.Default.Call, null, tint = Color(0xFF10B981), modifier = Modifier.size(32.dp))
-        }
-    }
-}
 
 @Composable
 fun AllContactsList(
@@ -769,22 +604,6 @@ fun formatCallTime(timestamp: Long): String {
     return SimpleDateFormat(format, Locale.getDefault()).format(Date(timestamp))
 }
 
-fun fetchCallLog(context: Context): List<CallLogEntry> {
-    val list = mutableListOf<CallLogEntry>()
-    try {
-        val cursor = context.contentResolver.query(CallLog.Calls.CONTENT_URI, null, null, null, CallLog.Calls.DATE + " DESC")
-        cursor?.use {
-            val numIdx = it.getColumnIndex(CallLog.Calls.NUMBER)
-            val nameIdx = it.getColumnIndex(CallLog.Calls.CACHED_NAME)
-            val typeIdx = it.getColumnIndex(CallLog.Calls.TYPE)
-            val dateIdx = it.getColumnIndex(CallLog.Calls.DATE)
-            while (it.moveToNext() && list.size < 50) {
-                list.add(CallLogEntry(it.getString(numIdx) ?: "", it.getString(nameIdx), it.getInt(typeIdx), it.getLong(dateIdx), 0))
-            }
-        }
-    } catch (e: Exception) {}
-    return list
-}
 
 fun fetchAllDeviceContacts(context: Context): List<DeviceContact> {
     val contacts = mutableListOf<DeviceContact>()
@@ -835,19 +654,3 @@ fun vibrate(context: Context) {
     }
 }
 
-@Composable
-fun DefaultDialerBanner(onRequest: () -> Unit) {
-    Surface(
-        color = Color(0xFFEF4444).copy(alpha = 0.2f),
-        shape = RoundedCornerShape(40.dp),
-        border = BorderStroke(1.dp, Color(0xFFEF4444).copy(alpha = 0.5f)),
-        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
-    ) {
-        Row(Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Default.Warning, null, tint = Color(0xFFEF4444))
-            Spacer(Modifier.width(16.dp))
-            Text("Stel in als standaard beller.", Modifier.weight(1f), fontSize = 15.sp, fontWeight = FontWeight.Black, color = Color.White)
-            Button(onClick = onRequest, shape = RoundedCornerShape(20.dp)) { Text("FIX", fontWeight = FontWeight.Black) }
-        }
-    }
-}

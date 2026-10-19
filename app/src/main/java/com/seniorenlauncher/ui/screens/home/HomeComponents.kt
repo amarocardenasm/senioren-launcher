@@ -1,6 +1,10 @@
 package com.seniorenlauncher.ui.screens.home
 
 import android.content.Context
+import android.widget.Toast
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
+import kotlinx.coroutines.withTimeoutOrNull
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
@@ -32,7 +36,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 @Composable
-fun HomeTopBar(notificationCount: Int, onNotificationsClick: () -> Unit) {
+fun HomeTopBar(notificationCount: Int, onNotificationsClick: () -> Unit, onEmergencyHold: () -> Unit) {
     val context = LocalContext.current
     var currentTime by remember { mutableStateOf(SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())) }
     var currentDate by remember { mutableStateOf(SimpleDateFormat("EEEE d MMMM", Locale.getDefault()).format(Date())) }
@@ -67,10 +71,20 @@ fun HomeTopBar(notificationCount: Int, onNotificationsClick: () -> Unit) {
         color = Color.Transparent,
         modifier = Modifier.fillMaxWidth()
     ) {
+        Column {
+        // Boton de emergencia pequeño y arriba: hay que mantenerlo presionado
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .padding(end = 24.dp, top = 8.dp),
+            contentAlignment = Alignment.CenterEnd
+        ) {
+            EmergencyHoldChip(onActivate = onEmergencyHold)
+        }
         Row(
             Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 24.dp),
+                .padding(horizontal = 24.dp, vertical = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -166,50 +180,52 @@ fun HomeTopBar(notificationCount: Int, onNotificationsClick: () -> Unit) {
                 }
             }
         }
+        }
     }
 }
 
+/**
+ * Boton de emergencia discreto. Un toque corto solo muestra un aviso;
+ * hay que mantenerlo presionado 2 segundos para abrir la pantalla de emergencias.
+ */
 @Composable
-fun HomeSOSButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun EmergencyHoldChip(onActivate: () -> Unit, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
     Surface(
-        onClick = onClick,
         modifier = modifier
-            .height(110.dp)
-            .fillMaxWidth(),
-        shape = RoundedCornerShape(40.dp),
-        color = Color(0xFFEF4444),
-        shadowElevation = 16.dp
+            .height(36.dp)
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onPress = {
+                        val released = withTimeoutOrNull(2000L) { tryAwaitRelease() }
+                        if (released == null) {
+                            onActivate()
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "Mantenga presionado 2 segundos para emergencias",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                )
+            },
+        shape = RoundedCornerShape(18.dp),
+        color = Color(0xFF7F1D1D).copy(alpha = 0.9f)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.horizontalGradient(
-                        colors = listOf(Color(0xFFEF4444), Color(0xFF991B1B))
-                    )
-                )
-                .border(1.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(40.dp)),
-            contentAlignment = Alignment.Center
+        Row(
+            modifier = Modifier.padding(horizontal = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Icon(
-                    Icons.Default.HealthAndSafety,
-                    contentDescription = null,
-                    modifier = Modifier.size(48.dp),
-                    tint = Color.White
-                )
-                Spacer(Modifier.width(24.dp))
-                Text(
-                    "SOS HULP NODIG",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.W900,
-                    color = Color.White,
-                    letterSpacing = 1.2.sp
-                )
-            }
+            Icon(
+                Icons.Default.HealthAndSafety,
+                contentDescription = "Emergencia",
+                modifier = Modifier.size(18.dp),
+                tint = Color.White
+            )
+            Spacer(Modifier.width(6.dp))
+            Text("EMERGENCIA", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
         }
     }
 }

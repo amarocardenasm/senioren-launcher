@@ -3,7 +3,7 @@ import androidx.room.*
 import com.seniorenlauncher.data.model.*
 import kotlinx.coroutines.flow.Flow
 
-@Database(entities = [QuickContact::class, Medication::class, MedicationLog::class, Note::class, CalendarEvent::class, EmergencyInfo::class, AlarmEntry::class, RadioStation::class, WeatherLocation::class, BlockedNumber::class], version = 9, exportSchema = false)
+@Database(entities = [QuickContact::class, Medication::class, MedicationLog::class, Note::class, CalendarEvent::class, EmergencyInfo::class, AlarmEntry::class, WeatherLocation::class, BlockedNumber::class], version = 10, exportSchema = false)
 abstract class LauncherDatabase : RoomDatabase() {
     abstract fun contactDao(): ContactDao
     abstract fun medicationDao(): MedicationDao
@@ -11,7 +11,6 @@ abstract class LauncherDatabase : RoomDatabase() {
     abstract fun calendarDao(): CalendarDao
     abstract fun emergencyDao(): EmergencyDao
     abstract fun alarmDao(): AlarmDao
-    abstract fun radioDao(): RadioDao
     abstract fun weatherDao(): WeatherDao
     abstract fun blockedDao(): BlockedDao
 }
@@ -68,11 +67,6 @@ abstract class LauncherDatabase : RoomDatabase() {
     @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun insert(a: AlarmEntry): Long
     @Update suspend fun update(a: AlarmEntry)
     @Delete suspend fun delete(a: AlarmEntry)
-}
-@Dao interface RadioDao {
-    @Query("SELECT * FROM radio_stations ORDER BY category, name") fun getAll(): Flow<List<RadioStation>>
-    @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun insert(s: RadioStation)
-    @Delete suspend fun delete(s: RadioStation)
 }
 @Dao interface WeatherDao {
     @Query("SELECT * FROM weather_locations") fun getAll(): Flow<List<WeatherLocation>>
