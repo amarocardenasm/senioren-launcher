@@ -228,7 +228,6 @@ fun HomeScreenContent(
                                     app.id == "camera" -> AppLauncher.openSystemCamera(context)
                                     app.id == "wifi" -> onWifiClick()
                                     app.id == "bluetooth" -> onBluetoothClick()
-                                    app.id == "remote_support" -> onNavigate("remote_support")
                                     app.id == "settings" -> onSettingsClick()
                                     app.id.startsWith("mapped_") -> {
                                         val pkg = settings.appMappings[app.id]

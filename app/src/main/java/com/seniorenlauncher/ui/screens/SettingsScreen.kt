@@ -31,7 +31,6 @@ import android.content.Intent
 import android.net.Uri
 import com.seniorenlauncher.data.model.*
 import com.seniorenlauncher.ui.components.ScreenHeader
-import com.seniorenlauncher.util.UpdateManager
 import kotlinx.coroutines.launch
 
 @Composable
@@ -84,8 +83,6 @@ fun SettingsScreenContent(
     var enteredPin by remember { mutableStateOf("") }
     
     // Update status
-    var isCheckingUpdate by remember { mutableStateOf(false) }
-    var updateResult by remember { mutableStateOf<String?>(null) }
 
     if (settings.settingsLocked && !showPinScreen) {
         LockedSettingsScreen(
@@ -278,53 +275,6 @@ fun SettingsScreenContent(
 
             // --- GROEP 4: SYSTEEM & BEHEER ---
             SettingsGroup(title = "⚙️ Systeem & Beheer", icon = Icons.Default.Build) {
-                // UPDATE SECTIE
-                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                    Text("Versie: ${com.seniorenlauncher.BuildConfig.VERSION_NAME}", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Spacer(Modifier.height(12.dp))
-                    Button(
-                        onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            scope.launch {
-                                isCheckingUpdate = true
-                                val updateManager = UpdateManager(context)
-                                val release = updateManager.checkForUpdates()
-                                if (release != null) {
-                                    updateResult = "Nieuwe versie gevonden!"
-                                    updateManager.downloadAndInstall(release)
-                                } else {
-                                    updateResult = "U heeft de nieuwste versie."
-                                }
-                                isCheckingUpdate = false
-                            }
-                        },
-                        enabled = !isCheckingUpdate,
-                        modifier = Modifier.fillMaxWidth().height(80.dp),
-                        shape = RoundedCornerShape(40.dp)
-                    ) {
-                        if (isCheckingUpdate) CircularProgressIndicator(Modifier.size(24.dp), color = Color.White)
-                        else Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.SystemUpdate, null)
-                            Spacer(Modifier.width(12.dp))
-                            Text("CONTROLEER OP UPDATES", fontWeight = FontWeight.Black, fontSize = 18.sp)
-                        }
-                    }
-                    updateResult?.let { Text(it, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 12.dp)) }
-                }
-
-                HorizontalDivider(Modifier.padding(vertical = 16.dp), thickness = 0.5.dp)
-
-                SettRow("📱 Hulp op Afstand (Web)") { 
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onNavigate("remote_support") 
-                }
-                
-                HorizontalDivider(Modifier.padding(vertical = 8.dp), thickness = 0.5.dp)
-
-                SettRow("🛠️ Geavanceerde Instellingen") {
-                    // Placeholder voor toekomstige systeem-integraties
-                }
-                
                 Spacer(Modifier.height(16.dp))
                 
                 Button(

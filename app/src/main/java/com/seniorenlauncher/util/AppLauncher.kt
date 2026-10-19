@@ -71,22 +71,6 @@ object AppLauncher {
         }
     }
 
-    fun startRemoteSupport(context: Context) {
-        val packageName = "com.carriez.flutter_hbb"
-        try {
-            val pm = context.packageManager
-            val intent = pm.getLaunchIntentForPackage(packageName)
-            if (intent != null) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(intent)
-            } else {
-                Toast.makeText(context, "RustDesk niet gevonden", Toast.LENGTH_LONG).show()
-            }
-        } catch (e: Exception) {
-            Log.e("AppLauncher", "Error starting remote support", e)
-        }
-    }
-
     fun openWifiSettings(context: Context) {
         try {
             val intent = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {

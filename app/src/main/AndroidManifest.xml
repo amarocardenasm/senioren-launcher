@@ -40,7 +40,6 @@
     <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
     <uses-permission android:name="android.permission.READ_CALENDAR" />
     <uses-permission android:name="android.permission.WRITE_CALENDAR" />
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission
         android:name="android.permission.FOREGROUND_SERVICE"
@@ -58,10 +57,6 @@
     <uses-feature android:name="android.hardware.camera.flash" android:required="false" />
     <uses-feature android:name="android.hardware.sensor.accelerometer" android:required="false" />
     <uses-feature android:name="android.hardware.sensor.stepcounter" android:required="false" />
-
-    <queries>
-        <package android:name="com.carriez.flutter_hbb" />
-    </queries>
 
     <application
         android:name=".LauncherApp"
@@ -121,13 +116,6 @@
         </provider>
 
         <!-- Update Receiver -->
-        <receiver android:name=".receiver.UpdateReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.DOWNLOAD_COMPLETE" />
-            </intent-filter>
-        </receiver>
-
         <!-- SMS Components for Default App Role -->
         <receiver android:name=".receiver.SmsReceiver"
             android:exported="true"

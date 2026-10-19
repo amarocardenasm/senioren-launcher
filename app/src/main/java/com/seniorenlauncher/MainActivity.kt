@@ -22,7 +22,6 @@ import com.seniorenlauncher.ui.screens.*
 import com.seniorenlauncher.ui.theme.SeniorenLauncherTheme
 import com.seniorenlauncher.ui.screens.home.*
 import com.seniorenlauncher.service.SeniorInCallService
-import com.seniorenlauncher.util.UpdateManager
 import android.telecom.Call
 import android.util.Log
 import android.content.pm.PackageManager
@@ -85,15 +84,8 @@ class MainActivity : ComponentActivity() {
             
             var currentRoute by remember { mutableStateOf<String?>(null) }
 
-            // Auto-update check bij opstarten
             LaunchedEffect(Unit) {
-                val updateManager = UpdateManager(this@MainActivity)
-                val release = updateManager.checkForUpdates()
-                if (release != null) {
-                    updateManager.downloadAndInstall(release)
-                }
-
-                // Start stappenteller als we de permissie hebben
+                // Iniciar el contador de pasos si hay permiso
                 if (hasStepPermission()) {
                     startForegroundService(Intent(this@MainActivity, StepCounterService::class.java))
                 }

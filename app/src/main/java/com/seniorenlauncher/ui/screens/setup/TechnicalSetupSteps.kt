@@ -435,7 +435,6 @@ fun FallDetectionSetupScreen(onNext: () -> Unit, settingsVm: SettingsViewModel) 
 @Composable
 fun SecuritySetupScreen(onNext: () -> Unit, settingsVm: SettingsViewModel) {
     var pin by remember { mutableStateOf("") }
-    var remoteSupportEnabled by remember { mutableStateOf(true) }
 
     Column(
         modifier = Modifier
@@ -473,28 +472,6 @@ fun SecuritySetupScreen(onNext: () -> Unit, settingsVm: SettingsViewModel) {
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     visualTransformation = PasswordVisualTransformation(),
                     shape = RoundedCornerShape(12.dp)
-                )
-            }
-        }
-        
-        Spacer(Modifier.height(24.dp))
-        
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
-        ) {
-            Row(
-                modifier = Modifier.padding(20.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(Modifier.weight(1f)) {
-                    Text("Hulp op afstand", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                    Text("Maakt meekijken via RustDesk mogelijk.", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-                Switch(
-                    checked = remoteSupportEnabled,
-                    onCheckedChange = { remoteSupportEnabled = it }
                 )
             }
         }

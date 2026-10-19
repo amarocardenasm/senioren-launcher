@@ -12,7 +12,7 @@ data class AppSettings(
     val fontSize: Int = 18,
     val language: String = "nl",
     val nightModeAuto: Boolean = true,
-    val visibleApps: Set<String> = setOf("phone", "sms", "camera", "photos", "radio", "meds", "emergency", "sos", "remote_support", "wifi", "bluetooth", "settings"),
+    val visibleApps: Set<String> = setOf("phone", "sms", "camera", "photos", "radio", "meds", "emergency", "sos", "wifi", "bluetooth", "settings"),
     val appMappings: Map<String, String> = emptyMap(),
     val settingsLocked: Boolean = false,
     val pinCode: String? = "1234",
@@ -140,7 +140,6 @@ val ALL_APPS = listOf(
     AppInfo("steps", "Stappen", "🚶", "🚶", 0xFF14B8A6),
     AppInfo("emergency", "Noodinfo", "🏥", "🏥", 0xFFEF4444),
     AppInfo("sos", "SOS", "🆘", "🆘", 0xFFDC2626),
-    AppInfo("remote_support", "Hulp op afstand", "👨‍🔧", "👨‍🔧", 0xFF4A5568),
     AppInfo("all_apps", "Alle Apps", "📱", "📱", 0xFF718096),
     AppInfo("settings", "Instellingen", "⚙️", "⚙️", 0xFF718096),
 )
