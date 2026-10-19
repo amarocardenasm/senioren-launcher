@@ -73,10 +73,6 @@ dependencies {
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
 
-    // Media3 for Radio Playback
-    implementation(libs.androidx.media3.exoplayer)
-    implementation(libs.androidx.media3.session)
-    implementation(libs.androidx.media3.ui)
 
     debugImplementation(libs.androidx.compose.ui.tooling)
 }

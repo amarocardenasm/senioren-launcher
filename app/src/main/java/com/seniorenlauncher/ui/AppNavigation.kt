@@ -9,7 +9,6 @@ import com.seniorenlauncher.ui.screens.*
 @Composable
 fun AppNavigation(
     settingsVm: SettingsViewModel,
-    radioVm: RadioViewModel,
     initialWeatherNav: Boolean = false,
     onNavigatedToWeather: () -> Unit = {},
     onRouteChanged: (String?) -> Unit = {}
@@ -51,12 +50,6 @@ fun AppNavigation(
         composable("flashlight") { FlashlightScreen(onBack = { navController.popBackStack() }) }
         composable("magnifier") { MagnifierScreen(onBack = { navController.popBackStack() }) }
         composable("notes") { NotesScreen(onBack = { navController.popBackStack() }) }
-        composable("radio") { 
-            RadioScreen(
-                onBack = { navController.popBackStack() },
-                radioVm = radioVm
-            ) 
-        }
         composable("steps") { StepsScreen(onBack = { navController.popBackStack() }) }
         composable("emergency") { EmergencyInfoScreen(onBack = { navController.popBackStack() }) }
         composable("sos") { SOSScreen(onBack = { navController.popBackStack() }) }

@@ -17,7 +17,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.seniorenlauncher.ui.AppNavigation
-import com.seniorenlauncher.ui.components.RadioMiniPlayer
 import com.seniorenlauncher.ui.screens.*
 import com.seniorenlauncher.ui.theme.SeniorenLauncherTheme
 import com.seniorenlauncher.ui.screens.home.*
@@ -64,7 +63,6 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val settingsVm: SettingsViewModel = viewModel()
-            val radioVm: RadioViewModel = viewModel()
             val settings by settingsVm.settings.collectAsState()
             
             val triggerLabel by alarmTriggered
@@ -137,18 +135,9 @@ class MainActivity : ComponentActivity() {
                             Box(Modifier.weight(1f)) {
                                 AppNavigation(
                                     settingsVm = settingsVm, 
-                                    radioVm = radioVm, 
                                     initialWeatherNav = shouldNavToWeather,
                                     onNavigatedToWeather = { navigateToWeatherAfterAlarm.value = false },
                                     onRouteChanged = { currentRoute = it }
-                                )
-                            }
-                            if (currentRoute != "radio") {
-                                RadioMiniPlayer(
-                                    radioVm = radioVm,
-                                    onOpenRadio = {
-                                        // Optioneel: Navigeer naar radio
-                                    }
                                 )
                             }
                         }
