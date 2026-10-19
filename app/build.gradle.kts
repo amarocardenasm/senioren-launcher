@@ -72,6 +72,8 @@ dependencies {
     implementation(libs.androidx.camera.camera2)
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
+    // CameraX usa ListenableFuture; antes llegaba de forma indirecta con Media3
+    implementation("com.google.guava:listenablefuture:1.0")
 
 
     debugImplementation(libs.androidx.compose.ui.tooling)
