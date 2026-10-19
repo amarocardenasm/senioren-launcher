@@ -16,7 +16,6 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.provider.Settings
 import android.speech.tts.TextToSpeech
-import android.telephony.SmsManager
 import android.util.Log
 import android.view.WindowManager
 import android.widget.Toast
@@ -278,12 +277,6 @@ private suspend fun handleMedicationMissed(appContext: Context, medId: Long) {
         if (med != null && med.isPending) {
             dao.insertLog(com.seniorenlauncher.data.model.MedicationLog(medicationId = med.id, date = System.currentTimeMillis(), time = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()), status = "MISSED"))
             dao.update(med.copy(isPending = false))
-            val sosContacts = LauncherApp.instance.database.contactDao().getSosContactsSync()
-            if (sosContacts.isNotEmpty()) {
-                val message = "Sionro: Uw familielid heeft het medicijn '${med.name}' NIET ingenomen binnen 5 minuten."
-                val smsManager = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) appContext.getSystemService(SmsManager::class.java) else SmsManager.getDefault()
-                sosContacts.forEach { contact -> try { smsManager?.sendTextMessage(contact.phoneNumber, null, message, null, null) } catch (e: Exception) { Log.e("AlarmTrigger", "SMS FOUT") } }
-            }
         }
     }
 }

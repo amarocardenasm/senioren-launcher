@@ -78,15 +78,6 @@ fun PermissionsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
             listOf(Manifest.permission.CALL_PHONE)
         ))
 
-        list.add(PermissionCategory(
-            if (isSenior) "BERICHTEN" else "SMS SERVICE", 
-            if (isSenior) "Zodat de telefoon een noodbericht kan sturen naar uw familie."
-            else "Nodig voor SOS en batterijwaarschuwingen.", 
-            "Privacy: We lezen NOOIT uw privéberichten.",
-            Icons.Default.Sms, 
-            listOf(Manifest.permission.SEND_SMS, Manifest.permission.READ_SMS, Manifest.permission.RECEIVE_SMS)
-        ))
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val healthPermissions = mutableListOf(Manifest.permission.ACTIVITY_RECOGNITION)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {

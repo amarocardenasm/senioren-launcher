@@ -9,7 +9,6 @@ import android.location.Location
 import android.net.Uri
 import android.os.Build
 import android.os.IBinder
-import android.telephony.SmsManager
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
@@ -76,39 +75,7 @@ class SOSService : Service() {
             return
         }
 
-        // 1. Locatie ophalen
-        val location = try {
-            getLocation()
-        } catch (e: Exception) {
-            Log.e(tag, "Fout bij ophalen locatie", e)
-            null
-        }
-
-        val mapsUrl = location?.let { "https://www.google.com/maps?q=${it.latitude},${it.longitude}" }
-        val message = if (mapsUrl != null) {
-            "Sionro NOODGEVAL! Ik heb direct hulp nodig. Locatie: $mapsUrl"
-        } else {
-            "Sionro NOODGEVAL! Ik heb direct hulp nodig. Kon exacte locatie niet bepalen."
-        }
-
-        // 2. SMS versturen naar alle SOS contacten
-        val smsManager = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            context.getSystemService(SmsManager::class.java)
-        } else {
-            @Suppress("DEPRECATION")
-            SmsManager.getDefault()
-        }
-        
-        sosContacts.forEach { contact ->
-            try {
-                smsManager?.sendTextMessage(contact.phoneNumber, null, message, null, null)
-                Log.d(tag, "SOS SMS verstuurd naar ${contact.name}")
-            } catch (e: Exception) {
-                Log.e(tag, "Fout bij versturen SMS naar ${contact.name}", e)
-            }
-        }
-
-        // 3. Eerste SOS contact direct bellen
+        // Llamar directamente al primer contacto SOS (ya no se envian SMS)
         val firstContact = sosContacts.first()
         makeEmergencyCall(firstContact.phoneNumber)
         

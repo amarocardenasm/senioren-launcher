@@ -7,7 +7,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import android.telephony.SmsManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.seniorenlauncher.LauncherApp
@@ -83,28 +82,6 @@ class MedicationAlarmReceiver : BroadcastReceiver() {
         val currentMed = dao.getById(med.id)
         
         if (currentMed?.isPending == true) {
-            // Medicijn is nog niet ingenomen na 1 uur -> SMS sturen naar mantelzorger
-            val contactDao = LauncherApp.instance.database.contactDao()
-            val sosContacts = contactDao.getSosContactsSync()
-            
-            if (sosContacts.isNotEmpty()) {
-                val message = "LET OP: Uw familielid heeft het medicijn '${med.name}' (${med.dose}) van een uur geleden nog niet afgevinkt in de Senioren Launcher."
-                val smsManager = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    ctx.getSystemService(SmsManager::class.java)
-                } else {
-                    @Suppress("DEPRECATION")
-                    SmsManager.getDefault()
-                }
-
-                sosContacts.forEach { contact ->
-                    try {
-                        smsManager.sendTextMessage(contact.phoneNumber, null, message, null, null)
-                    } catch (e: Exception) {
-                        Log.e("MedEscalation", "SMS failed", e)
-                    }
-                }
-            }
-            
             // Log als gemist
             dao.insertLog(MedicationLog(
                 medicationId = med.id, 

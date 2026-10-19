@@ -10,10 +10,8 @@ import com.seniorenlauncher.ui.screens.*
 fun AppNavigation(
     settingsVm: SettingsViewModel,
     radioVm: RadioViewModel,
-    initialSmsAddress: String? = null,
     initialIncomingCall: Boolean = false,
     initialWeatherNav: Boolean = false,
-    onNavigatedToSms: () -> Unit = {},
     onNavigatedToCall: () -> Unit = {},
     onNavigatedToWeather: () -> Unit = {},
     onRouteChanged: (String?) -> Unit = {}
@@ -23,13 +21,6 @@ fun AppNavigation(
     LaunchedEffect(navController) {
         navController.currentBackStackEntryFlow.collect { entry ->
             onRouteChanged(entry.destination.route)
-        }
-    }
-
-    LaunchedEffect(initialSmsAddress) {
-        initialSmsAddress?.let {
-            navController.navigate("sms_detail/$it")
-            onNavigatedToSms()
         }
     }
 
@@ -59,14 +50,6 @@ fun AppNavigation(
                 onNavigate = { route -> navController.navigate(route) },
                 onBack = { navController.popBackStack() }
             ) 
-        }
-        composable("sms") { MessagesScreen(onBack = { navController.popBackStack() }) }
-        composable(
-            "sms_detail/{address}",
-            arguments = listOf(navArgument("address") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val address = backStackEntry.arguments?.getString("address")
-            MessagesScreen(onBack = { navController.popBackStack() }, initialAddress = address)
         }
         composable("camera") { /* Handled in HomeScreen via AppLauncher */ }
         composable("photos") { PhotosScreen(onBack = { navController.popBackStack() }) }

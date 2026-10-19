@@ -263,10 +263,6 @@ fun SettingsScreenContent(
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     onToggleFallDetection() 
                 }
-                SettToggle("🪫 Batterij-SMS (<15%)", settings.batteryAlertEnabled) { 
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onToggleBatteryAlert() 
-                }
                 SettToggle("🔌 Oplaadherinnering (22:00)", settings.chargingReminderEnabled) { 
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     onToggleChargingReminder() 

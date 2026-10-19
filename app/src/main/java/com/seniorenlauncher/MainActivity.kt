@@ -34,7 +34,6 @@ class MainActivity : ComponentActivity() {
     private var alarmTriggered = mutableStateOf<String?>(null)
     private var alarmSoundUri = mutableStateOf<String?>(null)
     private var alarmIsRemote = mutableStateOf(false)
-    private var navigateToSmsAddress = mutableStateOf<String?>(null)
     private var navigateToIncomingCall = mutableStateOf(false)
     private var navigateToWeatherAfterAlarm = mutableStateOf(false)
     private var fallDetectedTriggered = mutableStateOf(false)
@@ -75,7 +74,6 @@ class MainActivity : ComponentActivity() {
             val alarmId by currentAlarmId
             val soundUri by alarmSoundUri
             val isRemote by alarmIsRemote
-            val smsAddress by navigateToSmsAddress
             val showIncomingCall by navigateToIncomingCall
             val shouldNavToWeather by navigateToWeatherAfterAlarm
             val isFallDetected by fallDetectedTriggered
@@ -146,10 +144,8 @@ class MainActivity : ComponentActivity() {
                                 AppNavigation(
                                     settingsVm = settingsVm, 
                                     radioVm = radioVm, 
-                                    initialSmsAddress = smsAddress,
                                     initialIncomingCall = showIncomingCall || (currentCall != null && currentCall?.state == Call.STATE_RINGING),
                                     initialWeatherNav = shouldNavToWeather,
-                                    onNavigatedToSms = { navigateToSmsAddress.value = null },
                                     onNavigatedToCall = { navigateToIncomingCall.value = false },
                                     onNavigatedToWeather = { navigateToWeatherAfterAlarm.value = false },
                                     onRouteChanged = { currentRoute = it }
@@ -211,8 +207,6 @@ class MainActivity : ComponentActivity() {
                 alarmSoundUri.value = it.getStringExtra("ALARM_SOUND")
             } else if (navigateTo == "fall_detected") {
                 fallDetectedTriggered.value = true
-            } else if (navigateTo == "sms") {
-                navigateToSmsAddress.value = it.getStringExtra("SMS_ADDRESS")
             } else if (navigateTo == "incoming_call") {
                 navigateToIncomingCall.value = true
             }

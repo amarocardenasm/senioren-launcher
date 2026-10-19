@@ -44,7 +44,6 @@ fun DefaultAppsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
     
     var isDefaultHome by remember { mutableStateOf(false) }
     var isDefaultDialer by remember { mutableStateOf(false) }
-    var isDefaultSms by remember { mutableStateOf(false) }
 
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
@@ -55,11 +54,9 @@ fun DefaultAppsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     val roleManager = context.getSystemService(Context.ROLE_SERVICE) as RoleManager
                     isDefaultDialer = roleManager.isRoleHeld(RoleManager.ROLE_DIALER)
-                    isDefaultSms = roleManager.isRoleHeld(RoleManager.ROLE_SMS)
                 } else {
                     val telecomManager = context.getSystemService(Context.TELECOM_SERVICE) as TelecomManager
                     isDefaultDialer = telecomManager.defaultDialerPackage == context.packageName
-                    isDefaultSms = Telephony.Sms.getDefaultSmsPackage(context) == context.packageName
                 }
             }
         }
@@ -71,7 +68,7 @@ fun DefaultAppsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
 
     val roleLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
 
-    val allDone = isDefaultHome && isDefaultDialer && isDefaultSms
+    val allDone = isDefaultHome && isDefaultDialer
 
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp).verticalScroll(rememberScrollState()),
@@ -89,8 +86,8 @@ fun DefaultAppsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
         
         Text(
             text = if (isSenior) 
-                "We maken de Senioren Launcher uw vaste hulp voor bellen en berichten. Klik op de rode vakken."
-                else "Stel de launcher in als standaard for Home, Telefoon en SMS om de stabiliteit te garanderen.",
+                "We maken de Senioren Launcher uw vaste hulp voor bellen. Klik op de rode vakken."
+                else "Stel de launcher in als standaard voor Home en Telefoon om de stabiliteit te garanderen.",
             fontSize = if (isSenior) 22.sp else 18.sp, 
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -130,28 +127,6 @@ fun DefaultAppsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
                 } else {
                     val intent = Intent(TelecomManager.ACTION_CHANGE_DEFAULT_DIALER).apply {
                         putExtra(TelecomManager.EXTRA_CHANGE_DEFAULT_DIALER_PACKAGE_NAME, context.packageName)
-                    }
-                    roleLauncher.launch(intent)
-                }
-            }
-        )
-
-        Spacer(Modifier.height(16.dp))
-
-        DefaultAppRow(
-            title = if (isSenior) "3. Berichten knop" else "Berichten (SMS)",
-            description = if (isSenior) "Zodat u veilig berichten kunt ontvangen." else "Nodig voor SOS en batterijmeldingen.",
-            isGranted = isDefaultSms,
-            icon = Icons.Default.Sms,
-            isSenior = isSenior,
-            onClick = {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    val roleManager = context.getSystemService(Context.ROLE_SERVICE) as RoleManager
-                    val intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_SMS)
-                    roleLauncher.launch(intent)
-                } else {
-                    val intent = Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT).apply {
-                        putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME, context.packageName)
                     }
                     roleLauncher.launch(intent)
                 }

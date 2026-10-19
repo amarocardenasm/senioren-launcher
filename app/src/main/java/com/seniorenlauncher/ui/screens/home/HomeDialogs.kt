@@ -580,7 +580,7 @@ fun SOSCountdownDialog(
     if (!hasPermission) {
         PermissionRequestDialog(
             title = "SOS Toegang",
-            description = "Om hulp te kunnen inschakelen hebben we toestemming nodig voor locatie, bellen en SMS.",
+            description = "Om hulp te kunnen inschakelen hebben we toestemming nodig voor locatie en bellen.",
             onDismiss = onDismiss,
             onGrant = {
                 permissionLauncher.launch(PermissionUtils.getRequiredSosPermissions().toTypedArray())

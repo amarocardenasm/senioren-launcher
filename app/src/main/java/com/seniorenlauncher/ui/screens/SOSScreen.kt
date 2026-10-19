@@ -295,7 +295,7 @@ fun SOSScreen(onBack: () -> Unit) {
                     Spacer(Modifier.height(32.dp))
                     
                     Text(
-                        "Uw noodcontacten ontvangen direct\nuw locatie via SMS.",
+                        "Uw eerste noodcontact wordt\ndirect gebeld.",
                         textAlign = TextAlign.Center,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Medium,

@@ -71,6 +71,21 @@ object AppLauncher {
         }
     }
 
+    /** Abre la app de mensajes predeterminada del celular (no una propia). */
+    fun openMessages(context: Context, address: String? = null) {
+        try {
+            val intent = if (!address.isNullOrBlank()) {
+                Intent(Intent.ACTION_SENDTO, android.net.Uri.parse("smsto:" + android.net.Uri.encode(address)))
+            } else {
+                Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_APP_MESSAGING)
+            }
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(context, "No se encontro la app de mensajes", Toast.LENGTH_LONG).show()
+        }
+    }
+
     fun openWifiSettings(context: Context) {
         try {
             val intent = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {

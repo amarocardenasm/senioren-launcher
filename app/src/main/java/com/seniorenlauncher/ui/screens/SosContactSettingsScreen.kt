@@ -47,7 +47,7 @@ fun SosContactSettingsScreen(onBack: () -> Unit) {
         ScreenHeader(title = "SOS Instellingen", onBack = onBack)
         
         Text(
-            "Deze mensen krijgen een SMS met uw locatie bij nood.",
+            "Het eerste contact wordt direct gebeld bij nood.",
             modifier = Modifier.padding(bottom = 16.dp, start = 8.dp, end = 8.dp),
             fontSize = 18.sp,
             lineHeight = 24.sp,

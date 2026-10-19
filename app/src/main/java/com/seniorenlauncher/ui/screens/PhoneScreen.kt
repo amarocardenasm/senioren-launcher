@@ -235,14 +235,7 @@ fun PhoneScreen(onNavigate: (String) -> Unit, onBack: () -> Unit, settingsVm: Se
                                 allContacts = allContacts,
                                 onNumberChange = { phoneNumber = it },
                                 onCall = { makeDirectCall(localContext, phoneNumber) },
-                                onSendMessage = { 
-                                    val trimmed = phoneNumber.trim()
-                                    if (trimmed.isNotEmpty()) {
-                                        onNavigate("sms?address=${Uri.encode(trimmed)}")
-                                    } else {
-                                        onNavigate("sms")
-                                    }
-                                }
+                                onSendMessage = { com.seniorenlauncher.util.AppLauncher.openMessages(localContext, phoneNumber.trim()) }
                             )
                             PhoneTab.Recents -> RecentsList(onCall = { number -> makeDirectCall(localContext, number) })
                             PhoneTab.Contacts -> AllContactsList(
