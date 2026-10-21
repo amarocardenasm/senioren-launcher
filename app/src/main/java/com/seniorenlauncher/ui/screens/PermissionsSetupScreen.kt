@@ -16,6 +16,8 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
@@ -42,7 +44,8 @@ data class PermissionCategory(
     val description: String,
     val privacyNote: String,
     val icon: ImageVector,
-    val permissions: List<String>
+    val permissions: List<String>,
+    val ifDenied: String = ""
 )
 
 @Composable
@@ -53,29 +56,43 @@ fun PermissionsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
         val list = mutableListOf<PermissionCategory>()
         
         val locationPermissions = mutableListOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            locationPermissions.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            locationPermissions.add(Manifest.permission.FOREGROUND_SERVICE_LOCATION)
-        }
 
         list.add(PermissionCategory(
-            if (isSenior) "HULP BIJ NOOD" else "LOCATIE", 
-            if (isSenior) "Als u in nood bent, kan de app uw familie vertellen waar u bent." 
-            else "Nodig voor de SOS-functie om uw locatie te bepalen.", 
-            "Privacy: Uw locatie wordt alleen gedeeld tijdens een SOS-oproep.",
+            if (isSenior) "CLIMA" else "UBICACIÓN", 
+            if (isSenior) "Para saber el clima de donde usted está." 
+            else "Necesario para conocer su ubicación y mostrar el clima.", 
+            "Privacidad: su ubicación no se comparte con nadie.",
             Icons.Default.LocationOn, 
-            locationPermissions
+            locationPermissions,
+            "Si dice que no: el clima le pedirá que elija su ciudad a mano."
         ))
 
         list.add(PermissionCategory(
-            if (isSenior) "FAMILIE BELLEN" else "TELEFOON", 
-            if (isSenior) "Hiermee kunt u direct uw kinderen of de dokter bellen."
-            else "Om direct vanuit de launcher te bellen.", 
-            "Privacy: De app belt alleen wanneer u zelf op een contact drukt.",
+            if (isSenior) "LLAMAR A LA FAMILIA" else "TELÉFONO", 
+            if (isSenior) "Para llamar directamente a sus hijos o al doctor."
+            else "Para llamar directamente desde la pantalla de inicio.", 
+            "Privacidad: la app solo llama cuando usted toca un contacto.",
             Icons.Default.Phone, 
-            listOf(Manifest.permission.CALL_PHONE)
+            listOf(Manifest.permission.CALL_PHONE),
+            "Si dice que no: antes de cada llamada se abrirá el teclado del teléfono y tendrá que tocar llamar."
+        ))
+
+        list.add(PermissionCategory(
+            "CONTACTOS",
+            "Para elegir a sus familiares y amigos desde la libreta del teléfono.",
+            "Privacidad: sus contactos no salen de este teléfono.",
+            Icons.Default.Contacts,
+            listOf(Manifest.permission.READ_CONTACTS),
+            "Si dice que no: tendrá que escribir a mano cada nombre y número."
+        ))
+
+        list.add(PermissionCategory(
+            "AGENDA",
+            "Para ver y anotar sus citas (doctor, cumpleaños) y avisarle antes.",
+            "Privacidad: las citas quedan en su propio calendario.",
+            Icons.Default.CalendarMonth,
+            listOf(Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR),
+            "Si dice que no: la agenda no podrá mostrar ni guardar citas."
         ))
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -85,31 +102,34 @@ fun PermissionsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
             }
             
             list.add(PermissionCategory(
-                "GEZONDHEID", 
-                "Zodat de telefoon uw stapjes kan tellen voor uw dagelijkse beweging.", 
-                "Privacy: Deze gegevens blijven veilig op uw eigen telefoon.",
+                "SALUD", 
+                "Para que el teléfono cuente sus pasos diarios.", 
+                "Privacidad: estos datos quedan en su propio teléfono.",
                 Icons.AutoMirrored.Filled.DirectionsWalk, 
-                healthPermissions
+                healthPermissions,
+                "Si dice que no: el contador de pasos y la detección de caídas no funcionarán."
             ))
         }
 
         list.add(PermissionCategory(
-            if (isSenior) "VERGROOTGLAS" else "CAMERA", 
-            if (isSenior) "Zodat u kleine lettertjes makkelijk kunt lezen met de camera."
-            else "Nodig voor het vergrootglas en de zaklamp.", 
-            "Privacy: Er worden geen foto's ongevraagd opgeslagen.",
+            if (isSenior) "LUPA" else "CÁMARA", 
+            if (isSenior) "Para leer letra chica con facilidad usando la cámara."
+            else "Necesario para la lupa y la linterna.", 
+            "Privacidad: no se guarda ninguna foto sin que usted lo pida.",
             Icons.Default.CameraAlt, 
-            listOf(Manifest.permission.CAMERA)
+            listOf(Manifest.permission.CAMERA),
+            "Si dice que no: la lupa y la linterna no funcionarán."
         ))
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             list.add(PermissionCategory(
-                if (isSenior) "HERINNERINGEN" else "MELDINGEN", 
-                if (isSenior) "Zodat u een seintje krijgt als het tijd is voor uw medicijnen."
-                else "Nodig voor medicijnalarmen.", 
-                "Privacy: Geen reclame, alleen uw eigen belangrijke meldingen.",
+                if (isSenior) "RECORDATORIOS" else "AVISOS", 
+                if (isSenior) "Para recibir un aviso cuando sea hora de sus medicamentos."
+                else "Necesario para las alarmas de medicamentos.", 
+                "Privacidad: sin publicidad, solo sus avisos importantes.",
                 Icons.Default.Notifications, 
-                listOf(Manifest.permission.POST_NOTIFICATIONS)
+                listOf(Manifest.permission.POST_NOTIFICATIONS),
+                "Si dice que no: no recibirá avisos de sus medicamentos ni de sus citas."
             ))
         }
 
@@ -145,7 +165,7 @@ fun PermissionsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
             // Premium Stepper
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = "STAP ${currentStep + 1} VAN ${categories.size}".uppercase(),
+                    text = "PASO ${currentStep + 1} DE ${categories.size}".uppercase(),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Black,
                     letterSpacing = 2.sp,
@@ -168,7 +188,7 @@ fun PermissionsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
                 }
             }
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             AnimatedContent(
                 targetState = currentCategory,
@@ -180,12 +200,12 @@ fun PermissionsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
             ) { category ->
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())
                 ) {
                     // Luminous Icon
                     Box(
                         contentAlignment = Alignment.Center,
-                        modifier = Modifier.size(160.dp)
+                        modifier = Modifier.size(130.dp)
                     ) {
                         Surface(
                             modifier = Modifier.size(120.dp),
@@ -226,7 +246,18 @@ fun PermissionsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
                         color = Color.White
                     )
 
-                    Spacer(modifier = Modifier.height(40.dp))
+                    if (category.ifDenied.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = category.ifDenied,
+                            fontSize = 18.sp,
+                            textAlign = TextAlign.Center,
+                            lineHeight = 26.sp,
+                            color = Color(0xFFCBD5E1)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(32.dp))
 
                     // Bento-style Privacy Card
                     Card(
@@ -287,7 +318,7 @@ fun PermissionsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                if (currentStep < categories.size - 1) "VOLGENDE STAP" else "START DE APP", 
+                                if (currentStep < categories.size - 1) "SIGUIENTE PASO" else "INICIAR LA APP", 
                                 fontSize = 24.sp, 
                                 fontWeight = FontWeight.Black
                             )
@@ -313,7 +344,7 @@ fun PermissionsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
                         shape = RoundedCornerShape(40.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B82F6))
                     ) {
-                        Text("JA, DIT IS GOED", fontSize = 24.sp, fontWeight = FontWeight.Black)
+                        Text("SÍ, ESTÁ BIEN", fontSize = 24.sp, fontWeight = FontWeight.Black)
                     }
                     
                     TextButton(
@@ -323,7 +354,7 @@ fun PermissionsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     ) {
                         Text(
-                            "NU EVEN NIET", 
+                            "AHORA NO", 
                             fontSize = 18.sp, 
                             fontWeight = FontWeight.Black,
                             color = Color(0xFF94A3B8)

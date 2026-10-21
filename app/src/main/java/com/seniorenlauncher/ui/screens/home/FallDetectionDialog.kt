@@ -46,8 +46,8 @@ fun FallDetectionDialog(
 
     if (!hasPermission) {
         PermissionRequestDialog(
-            title = "SOS Toegang",
-            description = "Om hulp te kunnen inschakelen bij een val hebben we toestemming nodig voor locatie en bellen.",
+            title = "Permiso de emergencia",
+            description = "Para pedir ayuda si hay una caída, necesitamos permiso para llamar.",
             onDismiss = onCancel,
             onGrant = {
                 permissionLauncher.launch(PermissionUtils.getRequiredSosPermissions().toTypedArray())
@@ -89,7 +89,7 @@ fun FallDetectionDialog(
                 )
 
                 Text(
-                    "VAL GEDETECTEERD!",
+                    "¡CAÍDA DETECTADA!",
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Black,
                     color = Color.White,
@@ -97,7 +97,7 @@ fun FallDetectionDialog(
                 )
 
                 Text(
-                    "Bent u gevallen? We gaan hulp inschakelen over:",
+                    "¿Se cayó? Llamaremos a su contacto de emergencia en:",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
@@ -125,7 +125,7 @@ fun FallDetectionDialog(
                     colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color(0xFFEF4444)),
                     shape = RoundedCornerShape(40.dp)
                 ) {
-                    Text("STOP / ANNULEER", fontSize = 24.sp, fontWeight = FontWeight.Black)
+                    Text("DETENER / CANCELAR", fontSize = 24.sp, fontWeight = FontWeight.Black)
                 }
 
                 val confirmInteractionSource = remember { MutableInteractionSource() }
@@ -143,7 +143,7 @@ fun FallDetectionDialog(
                     border = BorderStroke(2.dp, Color.White.copy(alpha = 0.5f)),
                     shape = RoundedCornerShape(40.dp)
                 ) {
-                    Text("BEL NU HULP", fontSize = 22.sp, fontWeight = FontWeight.Black)
+                    Text("LLAMAR AHORA", fontSize = 22.sp, fontWeight = FontWeight.Black)
                 }
             }
         }

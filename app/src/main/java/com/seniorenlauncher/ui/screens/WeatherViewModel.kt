@@ -67,7 +67,7 @@ class WeatherViewModel : ViewModel() {
                     }
                     
                     if (location != null) {
-                        val newLoc = WeatherLocation(cityName = "Mijn Locatie", latitude = location.latitude, longitude = location.longitude, isCurrentLocation = true)
+                        val newLoc = WeatherLocation(cityName = "Mi ubicación", latitude = location.latitude, longitude = location.longitude, isCurrentLocation = true)
                         _selectedLocation.value = newLoc
                         fetchWeather(location.latitude, location.longitude)
                     } else {
@@ -138,25 +138,25 @@ class WeatherViewModel : ViewModel() {
     private fun getGardenAdvice(temp: Double, forecast: List<ForecastDay>): String {
         val willRain = forecast.take(2).any { it.precipitation > 2.0 }
         return when {
-            willRain -> "🌱 U hoeft de planten buiten geen water te geven, er komt regen aan!"
-            temp > 20 -> "🪴 Het is droog. Vergeet uw plantjes niet wat water te geven."
+            willRain -> "🌱 No necesita regar las plantas de afuera, ¡viene lluvia!"
+            temp > 20 -> "🪴 Está seco. No olvide regar sus plantitas."
             else -> ""
         }
     }
 
     private fun getWindowAdvice(temp: Double) = when {
-        temp > 25 -> "🪟 Tip: Het wordt heet! Houd overdag de ramen en gordijnen gesloten."
-        temp in 15.0..22.0 -> "🪟 Lekker weer om even een kwartiertje het raam open te zetten voor frisse lucht."
+        temp > 25 -> "🪟 Consejo: ¡va a hacer calor! Mantenga cerradas ventanas y cortinas durante el día."
+        temp in 15.0..22.0 -> "🪟 Buen momento para abrir la ventana un ratito y ventilar."
         else -> ""
     }
 
     private fun getActivityAdvice(temp: Double, code: Int, wind: Double) = when {
-        temp in 15.0..22.0 && code < 51 && wind < 30 -> "🚶 Vandaag is perfect voor een wandeling!"
-        temp > 18 && code <= 1 && wind < 20 -> "☀️ Heerlijk weer om even op het balkon te zitten."
+        temp in 15.0..22.0 && code < 51 && wind < 30 -> "🚶 ¡Hoy es un día perfecto para caminar!"
+        temp > 18 && code <= 1 && wind < 20 -> "☀️ Buen clima para sentarse un rato en el balcón."
         else -> ""
     }
 
-    private fun getUvAdvice(uvIndex: Double) = if (uvIndex > 5) "☀️ Let op: De zon is vandaag erg sterk. Smeer u goed in!" else ""
+    private fun getUvAdvice(uvIndex: Double) = if (uvIndex > 5) "☀️ Atención: el sol está muy fuerte hoy. ¡Use bloqueador solar!" else ""
 
     private fun parseForecast(dailyJson: JSONObject): List<ForecastDay> {
         val list = mutableListOf<ForecastDay>()
@@ -176,10 +176,10 @@ class WeatherViewModel : ViewModel() {
         val temps = hourly.getJSONArray("temperature_2m")
         val codes = hourly.getJSONArray("weather_code")
         return listOf(
-            calculateDayPart("OCHTEND", 6, 12, temps, codes),
-            calculateDayPart("MIDDAG", 12, 18, temps, codes),
-            calculateDayPart("AVOND", 18, 23, temps, codes),
-            calculateDayPart("NACHT", 23, 30, temps, codes)
+            calculateDayPart("MAÑANA", 6, 12, temps, codes),
+            calculateDayPart("TARDE", 12, 18, temps, codes),
+            calculateDayPart("NOCHE", 18, 23, temps, codes),
+            calculateDayPart("MADRUGADA", 23, 30, temps, codes)
         )
     }
 
@@ -202,7 +202,7 @@ class WeatherViewModel : ViewModel() {
     fun searchAndAddCity(cityName: String) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val url = "https://geocoding-api.open-meteo.com/v1/search?name=$cityName&count=1&language=nl&format=json"
+                val url = "https://geocoding-api.open-meteo.com/v1/search?name=$cityName&count=1&language=es&format=json"
                 val json = JSONObject(URL(url).readText())
                 json.optJSONArray("results")?.getJSONObject(0)?.let {
                     dao.insert(WeatherLocation(cityName = "${it.getString("name")} (${it.optString("country", "")})", latitude = it.getDouble("latitude"), longitude = it.getDouble("longitude")))
@@ -214,12 +214,12 @@ class WeatherViewModel : ViewModel() {
     fun deleteLocation(loc: WeatherLocation) { viewModelScope.launch { dao.delete(loc); if (_selectedLocation.value?.id == loc.id) selectCurrentLocation() } }
 
     private fun getWeatherDescription(code: Int) = when (code) {
-        0 -> "Zonnig"; 1, 2, 3 -> "Licht bewolkt"; 45, 48 -> "Mistig"; 51, 53, 55 -> "Miezeregen"; 61, 63, 65 -> "Regen"; 71, 73, 75 -> "Sneeuw"; 80, 81, 82 -> "Buien"; 95, 96, 99 -> "Onweer"; else -> "Wisselvallig"
+        0 -> "Soleado"; 1, 2, 3 -> "Algo nublado"; 45, 48 -> "Neblina"; 51, 53, 55 -> "Llovizna"; 61, 63, 65 -> "Lluvia"; 71, 73, 75 -> "Nieve"; 80, 81, 82 -> "Chubascos"; 95, 96, 99 -> "Tormenta"; else -> "Variable"
     }
 
     private fun generateSafetyMessage(status: SafetyStatus, temp: Double) = when (status) {
-        SafetyStatus.RED -> if (temp > 30) "🔴 Blijf binnen! Het is extreem warm." else "🔴 Blijf binnen! Gevaarlijk glad of storm."
-        SafetyStatus.ORANGE -> "🟠 Let op: Kans op regen of harde wind."
-        SafetyStatus.GREEN -> "🟢 Heerlijk weer om naar buiten te gaan!"
+        SafetyStatus.RED -> if (temp > 30) "🔴 ¡Quédese en casa! Hace muchísimo calor." else "🔴 ¡Quédese en casa! Hay riesgo de resbalar o tormenta."
+        SafetyStatus.ORANGE -> "🟠 Atención: posible lluvia o viento fuerte."
+        SafetyStatus.GREEN -> "🟢 ¡Buen clima para salir!"
     }
 }

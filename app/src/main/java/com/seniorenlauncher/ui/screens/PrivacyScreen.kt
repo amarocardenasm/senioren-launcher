@@ -63,21 +63,6 @@ fun PrivacyScreen(onBack: () -> Unit) {
                 content = stringResource(R.string.privacy_rights_desc)
             )
 
-            Spacer(Modifier.height(16.dp))
-
-            Button(
-                onClick = {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/cma58/SeniorenLauncher/blob/main/PRIVACY.md"))
-                    context.startActivity(intent)
-                },
-                modifier = Modifier.fillMaxWidth().height(70.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.filledTonalButtonColors()
-            ) {
-                Icon(Icons.Default.OpenInNew, null)
-                Spacer(Modifier.width(12.dp))
-                Text("VOLLEDIGE POLICY OP GITHUB", fontWeight = FontWeight.Bold)
-            }
 
             Text(
                 stringResource(R.string.privacy_version_label),

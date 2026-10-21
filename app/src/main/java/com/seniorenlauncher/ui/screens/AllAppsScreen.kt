@@ -49,7 +49,7 @@ fun AllAppsScreen(onBack: () -> Unit) {
     }
 
     Column(Modifier.fillMaxSize().background(Color(0xFF0F172A)).padding(horizontal = 12.dp, vertical = 8.dp)) {
-        ScreenHeader(title = "Alle Apps", onBack = onBack)
+        ScreenHeader(title = "Mis apps", onBack = onBack)
         
         Spacer(Modifier.height(8.dp))
 
@@ -58,7 +58,7 @@ fun AllAppsScreen(onBack: () -> Unit) {
             value = searchQuery,
             onValueChange = { searchQuery = it },
             modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-            placeholder = { Text("Zoek een app...", fontWeight = FontWeight.Bold) },
+            placeholder = { Text("Busque una app...", fontWeight = FontWeight.Bold) },
             leadingIcon = { Icon(Icons.Default.Search, null, tint = Color.White) },
             shape = RoundedCornerShape(40.dp),
             textStyle = androidx.compose.ui.text.TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Black, color = Color.White),
@@ -78,10 +78,10 @@ fun AllAppsScreen(onBack: () -> Unit) {
             }
         } else {
             LazyVerticalGrid(
-                columns = GridCells.Fixed(3),
+                columns = GridCells.Fixed(2),
                 modifier = Modifier.weight(1f),
                 contentPadding = PaddingValues(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(filteredApps) { app ->
@@ -116,7 +116,7 @@ fun AppItem(app: InstalledApp, onClick: () -> Unit) {
                 indication = null,
                 onClick = onClick
             )
-            .padding(12.dp),
+            .padding(vertical = 20.dp, horizontal = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (app.icon != null) {
@@ -124,13 +124,13 @@ fun AppItem(app: InstalledApp, onClick: () -> Unit) {
                 model = app.icon,
                 contentDescription = null,
                 modifier = Modifier
-                    .size(64.dp)
+                    .size(80.dp)
                     .clip(RoundedCornerShape(20.dp))
             )
         } else {
             Box(
                 modifier = Modifier
-                    .size(64.dp)
+                    .size(80.dp)
                     .clip(RoundedCornerShape(20.dp))
                     .background(Color.White.copy(alpha = 0.1f)),
                 contentAlignment = Alignment.Center
@@ -148,11 +148,11 @@ fun AppItem(app: InstalledApp, onClick: () -> Unit) {
         
         Text(
             text = app.name,
-            fontSize = 16.sp,
+            fontSize = 20.sp,
             fontWeight = FontWeight.Black,
             textAlign = TextAlign.Center,
             maxLines = 2,
-            lineHeight = 18.sp,
+            lineHeight = 24.sp,
             color = Color.White
         )
     }

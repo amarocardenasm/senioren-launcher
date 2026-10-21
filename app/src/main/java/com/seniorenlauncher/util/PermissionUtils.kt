@@ -25,14 +25,7 @@ object PermissionUtils {
     }
 
     fun hasSosPermissions(context: Context): Boolean {
-        val basePermissions = mutableListOf(
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.CALL_PHONE
-        )
-        
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            basePermissions.add(Manifest.permission.FOREGROUND_SERVICE_LOCATION)
-        }
+        val basePermissions = listOf(Manifest.permission.CALL_PHONE)
         
         return basePermissions.all { 
             ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED 
@@ -40,13 +33,6 @@ object PermissionUtils {
     }
 
     fun getRequiredSosPermissions(): List<String> {
-        val perms = mutableListOf(
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.CALL_PHONE
-        )
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            perms.add(Manifest.permission.FOREGROUND_SERVICE_LOCATION)
-        }
-        return perms
+        return listOf(Manifest.permission.CALL_PHONE)
     }
 }

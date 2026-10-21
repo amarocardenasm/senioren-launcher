@@ -29,8 +29,8 @@ class LauncherApp : Application() {
         val mgr = getSystemService(NotificationManager::class.java)
         
         // SMS Channel
-        val smsChannel = NotificationChannel(CH_SMS, "SMS Berichten", NotificationManager.IMPORTANCE_HIGH).apply {
-            description = "Meldingen voor nieuwe SMS-berichten"
+        val smsChannel = NotificationChannel(CH_SMS, "Mensajes", NotificationManager.IMPORTANCE_HIGH).apply {
+            description = "Avisos de mensajes nuevos"
             enableLights(true)
             enableVibration(true)
             setShowBadge(true)
@@ -43,8 +43,8 @@ class LauncherApp : Application() {
         }
 
         // Medicijnen Channel
-        val medsChannel = NotificationChannel(CH_MEDS, "Medicijnen", NotificationManager.IMPORTANCE_HIGH).apply {
-            description = "Herinneringen voor inname van medicatie"
+        val medsChannel = NotificationChannel(CH_MEDS, "Medicamentos", NotificationManager.IMPORTANCE_HIGH).apply {
+            description = "Recordatorios para tomar sus medicamentos"
             enableLights(true)
             enableVibration(true)
             setShowBadge(true)
@@ -58,8 +58,8 @@ class LauncherApp : Application() {
         }
 
         // Wekker Channel
-        val alarmChannel = NotificationChannel(CH_ALARM, "Wekkers", NotificationManager.IMPORTANCE_MAX).apply {
-            description = "Kanaal voor wekker die moet blijven afgaan"
+        val alarmChannel = NotificationChannel(CH_ALARM, "Alarmas", NotificationManager.IMPORTANCE_MAX).apply {
+            description = "Canal para alarmas que deben seguir sonando"
             enableLights(true)
             enableVibration(true)
             setBypassDnd(true)
@@ -72,8 +72,8 @@ class LauncherApp : Application() {
         }
 
         // Agenda Wekker Channel
-        val calendarChannel = NotificationChannel(CH_CALENDAR, "Agenda Wekkers", NotificationManager.IMPORTANCE_MAX).apply {
-            description = "Grote meldingen voor agenda afspraken"
+        val calendarChannel = NotificationChannel(CH_CALENDAR, "Alarmas de agenda", NotificationManager.IMPORTANCE_MAX).apply {
+            description = "Avisos grandes para citas de la agenda"
             enableLights(true)
             enableVibration(true)
             setBypassDnd(true)
@@ -86,13 +86,13 @@ class LauncherApp : Application() {
         }
 
         mgr.createNotificationChannels(listOf(
-            NotificationChannel(CH_SOS, "SOS Noodgeval", NotificationManager.IMPORTANCE_HIGH),
+            NotificationChannel(CH_SOS, "Emergencia", NotificationManager.IMPORTANCE_HIGH),
             medsChannel,
             smsChannel,
             alarmChannel,
             calendarChannel,
-            NotificationChannel(CH_BATTERY, "Batterij", NotificationManager.IMPORTANCE_DEFAULT),
-            NotificationChannel(CH_GENERAL, "Algemeen", NotificationManager.IMPORTANCE_DEFAULT)
+            NotificationChannel(CH_BATTERY, "Batería", NotificationManager.IMPORTANCE_DEFAULT),
+            NotificationChannel(CH_GENERAL, "General", NotificationManager.IMPORTANCE_DEFAULT)
         ))
     }
 

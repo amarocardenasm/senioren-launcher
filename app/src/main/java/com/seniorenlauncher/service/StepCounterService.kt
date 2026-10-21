@@ -33,7 +33,7 @@ class StepCounterService : Service(), SensorEventListener {
         }
 
         val notification = NotificationCompat.Builder(this, LauncherApp.CH_GENERAL)
-            .setContentTitle("Stappenteller actief")
+            .setContentTitle("Contador de pasos activo")
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setOngoing(true)
             .build()
@@ -48,7 +48,7 @@ class StepCounterService : Service(), SensorEventListener {
         if (stepSensor != null) {
             sensorManager.registerListener(this, stepSensor, SensorManager.SENSOR_DELAY_NORMAL)
         } else {
-            Log.e("StepCounterService", "Geen stappenteller sensor gevonden")
+            Log.e("StepCounterService", "No se encontró el sensor de pasos")
             stopSelf()
         }
 

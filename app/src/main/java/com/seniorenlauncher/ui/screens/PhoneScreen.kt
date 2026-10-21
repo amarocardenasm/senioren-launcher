@@ -104,7 +104,7 @@ fun PhoneScreen(onNavigate: (String) -> Unit, onBack: () -> Unit, settingsVm: Se
             val myNumber = settings.userPhoneNumber ?: tryGetMyNumber(localContext)
             
             allContacts = if (myNumber != null) {
-                val me = DeviceContact("Ik (Mijn nummer)", myNumber, isMe = true)
+                val me = DeviceContact("Yo (Mi número)", myNumber, isMe = true)
                 listOf(me) + deviceContacts.filter { !isNumberMatch(it.number, myNumber) }
             } else {
                 deviceContacts
@@ -129,8 +129,8 @@ fun PhoneScreen(onNavigate: (String) -> Unit, onBack: () -> Unit, settingsVm: Se
         ) {
             ScreenHeader(
                 title = when(activeTab) {
-                    PhoneTab.Dialer -> "Telefoon"
-                    PhoneTab.Contacts -> "Contacten"
+                    PhoneTab.Dialer -> "Teléfono"
+                    PhoneTab.Contacts -> "Contactos"
                 }, 
                 onBack = { 
                     if (activeTab != PhoneTab.Dialer) activeTab = PhoneTab.Dialer 
@@ -153,14 +153,14 @@ fun PhoneScreen(onNavigate: (String) -> Unit, onBack: () -> Unit, settingsVm: Se
                 ) {
                     PhoneTabButton(
                         icon = Icons.Default.Dialpad,
-                        label = "TOETSEN",
+                        label = "TECLADO",
                         isSelected = activeTab == PhoneTab.Dialer,
                         modifier = Modifier.weight(1f),
                         onClick = { activeTab = PhoneTab.Dialer }
                     )
                     PhoneTabButton(
                         icon = Icons.Default.Person,
-                        label = "LIJST",
+                        label = "LISTA",
                         isSelected = activeTab == PhoneTab.Contacts,
                         modifier = Modifier.weight(1f),
                         onClick = { activeTab = PhoneTab.Contacts }
@@ -179,7 +179,7 @@ fun PhoneScreen(onNavigate: (String) -> Unit, onBack: () -> Unit, settingsVm: Se
                         shape = RoundedCornerShape(32.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
-                        Text("TOESTEMMING GEVEN", fontSize = 22.sp, fontWeight = FontWeight.Black)
+                        Text("DAR PERMISO", fontSize = 22.sp, fontWeight = FontWeight.Black)
                     }
                 }
             } else {
@@ -320,7 +320,7 @@ fun DialerContent(
         }
 
         Text(
-            text = matchedContact?.name ?: if (phoneNumber.isEmpty()) "TOETS EEN NUMMER" else "ONBEKEND",
+            text = matchedContact?.name ?: if (phoneNumber.isEmpty()) "MARQUE UN NÚMERO" else "DESCONOCIDO",
             fontSize = 20.sp,
             fontWeight = FontWeight.Black,
             color = MaterialTheme.colorScheme.primary,
@@ -468,7 +468,7 @@ fun AllContactsList(
             value = searchQuery,
             onValueChange = { searchQuery = it },
             modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-            placeholder = { Text("Zoek op naam of nummer...", fontWeight = FontWeight.Bold, color = Color.White.copy(alpha = 0.5f)) },
+            placeholder = { Text("Busque por nombre o número...", fontWeight = FontWeight.Bold, color = Color.White.copy(alpha = 0.5f)) },
             leadingIcon = { Icon(Icons.Default.Search, null, tint = MaterialTheme.colorScheme.primary) },
             shape = RoundedCornerShape(40.dp),
             colors = TextFieldDefaults.colors(
@@ -495,7 +495,7 @@ fun AllContactsList(
         ) {
             Icon(Icons.Default.PersonAdd, null, modifier = Modifier.size(28.dp))
             Spacer(Modifier.width(12.dp))
-            Text("NIEUW CONTACT TOEVOEGEN", fontSize = 18.sp, fontWeight = FontWeight.Black)
+            Text("AGREGAR NUEVO CONTACTO", fontSize = 18.sp, fontWeight = FontWeight.Black)
         }
 
         LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp), contentPadding = PaddingValues(bottom = 24.dp)) {
@@ -613,7 +613,7 @@ fun fetchAllDeviceContacts(context: Context): List<DeviceContact> {
         val numIdx = it.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
         val photoIdx = it.getColumnIndex(ContactsContract.CommonDataKinds.Phone.PHOTO_THUMBNAIL_URI)
         while (it.moveToNext()) {
-            val name = it.getString(nameIdx) ?: "Onbekend"
+            val name = it.getString(nameIdx) ?: "Desconocido"
             val number = it.getString(numIdx) ?: ""
             val photo = if (photoIdx != -1) it.getString(photoIdx) else null
             if (number.isNotEmpty()) contacts.add(DeviceContact(name, number, photo))

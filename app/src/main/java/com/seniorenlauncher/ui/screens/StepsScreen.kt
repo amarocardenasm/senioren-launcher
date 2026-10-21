@@ -60,17 +60,17 @@ fun StepsScreen(onBack: () -> Unit) {
     }
 
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(horizontal = 12.dp, vertical = 8.dp)) {
-        ScreenHeader(title = "Stappen", onBack = onBack)
+        ScreenHeader(title = "Pasos", onBack = onBack)
         
         if (hasPermission) {
             StepCounterContent()
         } else {
             Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(24.dp)) {
-                    Text("Toegang tot bewegingsgegevens is nodig om uw stappen te tellen.", textAlign = TextAlign.Center)
+                    Text("Se necesita acceso a los datos de movimiento para contar sus pasos.", textAlign = TextAlign.Center)
                     Spacer(Modifier.height(16.dp))
                     Button(onClick = { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) launcher.launch(Manifest.permission.ACTIVITY_RECOGNITION) }) {
-                        Text("Toestaan")
+                        Text("Permitir")
                     }
                 }
             }
@@ -110,7 +110,7 @@ fun StepCounterContent() {
                     color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(
-                    text = "STAPPEN VANDAAG",
+                    text = "PASOS DE HOY",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 2.sp,
@@ -130,13 +130,13 @@ fun StepCounterContent() {
         ) {
             StatCard(
                 modifier = Modifier.weight(1f),
-                label = "Afstand",
+                label = "Distancia",
                 value = String.format("%.1f", currentSteps * 0.00075) + " km",
                 color = Color(0xFF3B82F6)
             )
             StatCard(
                 modifier = Modifier.weight(1f),
-                label = "Calorieën",
+                label = "Calorías",
                 value = (currentSteps * 0.04).toInt().toString() + " kcal",
                 color = Color(0xFFEF4444)
             )
@@ -154,7 +154,7 @@ fun StepCounterContent() {
                 Icon(Icons.Default.Info, null, tint = MaterialTheme.colorScheme.primary)
                 Spacer(Modifier.width(16.dp))
                 Text(
-                    "Blijven bewegen is belangrijk voor uw gezondheid! Probeer elke dag een klein stukje te wandelen.",
+                    "¡Mantenerse activo es importante para su salud! Intente caminar un poco cada día.",
                     fontSize = 14.sp,
                     lineHeight = 20.sp
                 )

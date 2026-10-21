@@ -56,7 +56,7 @@ fun MedicationScreen(onBack: () -> Unit) {
     
     Column(Modifier.fillMaxSize().background(Color(0xFF0F172A)).padding(horizontal = 20.dp)) {
         ScreenHeader(
-            title = if (showHistory) "Logboek" else "Medicijnen", 
+            title = if (showHistory) "Historial" else "Medicamentos", 
             onBack = { if (showHistory) showHistory = false else onBack() }
         )
         
@@ -75,14 +75,14 @@ fun MedicationScreen(onBack: () -> Unit) {
             ) {
                 MedicationTabButton(
                     icon = Icons.Default.Medication,
-                    label = "OVERZICHT",
+                    label = "RESUMEN",
                     isSelected = !showHistory,
                     modifier = Modifier.weight(1f),
                     onClick = { showHistory = false }
                 )
                 MedicationTabButton(
                     icon = Icons.Outlined.History,
-                    label = "LOGBOEK",
+                    label = "HISTORIAL",
                     isSelected = showHistory,
                     modifier = Modifier.weight(1f),
                     onClick = { showHistory = true }
@@ -179,12 +179,12 @@ fun MedicationOverview(
         ) {
             if (medications.isEmpty()) {
                 Box(Modifier.fillMaxWidth().padding(top = 60.dp), contentAlignment = Alignment.Center) {
-                    Text("Nog geen medicijnen toegevoegd", fontSize = 20.sp, color = Color.Gray, fontWeight = FontWeight.Black)
+                    Text("Aún no hay medicamentos agregados", fontSize = 20.sp, color = Color.Gray, fontWeight = FontWeight.Black)
                 }
             } else {
                 val pendingMeds = medications.filter { it.isPending }
                 if (pendingMeds.isNotEmpty()) {
-                    Text("⚠️ NU INNEMEN", fontWeight = FontWeight.Black, fontSize = 20.sp, color = Color(0xFFEF4444), modifier = Modifier.padding(start = 4.dp))
+                    Text("⚠️ TOMAR AHORA", fontWeight = FontWeight.Black, fontSize = 20.sp, color = Color(0xFFEF4444), modifier = Modifier.padding(start = 4.dp))
                     pendingMeds.forEach { med ->
                         MedicationActionCard(med, onTaken = {
                             scope.launch {
@@ -199,14 +199,14 @@ fun MedicationOverview(
                                     medicationId = med.id, 
                                     date = System.currentTimeMillis(), 
                                     time = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()), 
-                                    status = "TAKEN"
+                                    status = "TAREAS"
                                 ))
                             }
                         })
                     }
                 }
 
-                Text("💊 MIJN LIJST", fontWeight = FontWeight.Black, fontSize = 20.sp, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(start = 4.dp, top = 8.dp))
+                Text("💊 MI LISTA", fontWeight = FontWeight.Black, fontSize = 20.sp, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(start = 4.dp, top = 8.dp))
                 medications.forEach { med ->
                     MedicationInfoCard(
                         med = med, 
@@ -346,7 +346,7 @@ fun MedicationInfoCard(med: Medication, onDelete: () -> Unit, onEdit: () -> Unit
                         )
                         Spacer(Modifier.width(8.dp))
                         Text(
-                            text = if (isLowStock) "BIJNA OP: nog ${med.stockCount} stuks" else "Voorraad: ${med.stockCount}",
+                            text = if (isLowStock) "CASI SE ACABA: quedan ${med.stockCount}" else "Stock: ${med.stockCount}",
                             fontSize = 15.sp,
                             fontWeight = if (isLowStock) FontWeight.Black else FontWeight.Bold,
                             color = if (isLowStock) Color(0xFFF87171) else MaterialTheme.colorScheme.onSurfaceVariant
@@ -362,13 +362,13 @@ fun MedicationInfoCard(med: Medication, onDelete: () -> Unit, onEdit: () -> Unit
 fun MedicationHistoryView(logs: List<MedicationLog>, meds: List<Medication>) {
     if (logs.isEmpty()) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Nog geen geschiedenis", color = Color.Gray, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            Text("Aún no hay historial", color = Color.Gray, fontWeight = FontWeight.Bold, fontSize = 18.sp)
         }
     } else {
         LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             items(logs) { log ->
                 val med = meds.find { it.id == log.medicationId }
-                val dateStr = SimpleDateFormat("EEEE d MMMM", Locale("nl", "NL")).format(Date(log.date))
+                val dateStr = SimpleDateFormat("EEEE d MMMM", Locale("es", "CL")).format(Date(log.date))
                 
                 Surface(
                     Modifier.fillMaxWidth(),
@@ -378,15 +378,15 @@ fun MedicationHistoryView(logs: List<MedicationLog>, meds: List<Medication>) {
                 ) {
                     Row(Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
                         Box(
-                            Modifier.size(50.dp).background(if (log.status == "TAKEN") Color(0xFF10B981).copy(alpha = 0.1f) else Color(0xFFEF4444).copy(alpha = 0.1f), CircleShape),
+                            Modifier.size(50.dp).background(if (log.status == "TAREAS") Color(0xFF10B981).copy(alpha = 0.1f) else Color(0xFFEF4444).copy(alpha = 0.1f), CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(if (log.status == "TAKEN") "✅" else "❌", fontSize = 24.sp)
+                            Text(if (log.status == "TAREAS") "✅" else "❌", fontSize = 24.sp)
                         }
                         Spacer(Modifier.width(20.dp))
                         Column {
-                            Text(med?.name ?: "Verwijderd medicijn", fontWeight = FontWeight.Black, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface)
-                            Text("$dateStr om ${log.time}", fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(med?.name ?: "Medicamento eliminado", fontWeight = FontWeight.Black, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface)
+                            Text("$dateStr a las ${log.time}", fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 }
@@ -432,12 +432,12 @@ fun MedicationEditDialog(
             border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
         ) {
             Column(Modifier.padding(24.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                Text(if (medication == null) "Nieuw Medicijn" else "Aanpassen", fontSize = 28.sp, fontWeight = FontWeight.Black, color = Color.White)
+                Text(if (medication == null) "Nuevo medicamento" else "Editar", fontSize = 28.sp, fontWeight = FontWeight.Black, color = Color.White)
                 
                 OutlinedTextField(
                     value = name, 
                     onValueChange = { name = it }, 
-                    label = { Text("Naam") }, 
+                    label = { Text("Nombre") }, 
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(24.dp),
                     colors = TextFieldDefaults.colors(
@@ -450,7 +450,7 @@ fun MedicationEditDialog(
                 OutlinedTextField(
                     value = dose, 
                     onValueChange = { dose = it }, 
-                    label = { Text("Dosering") }, 
+                    label = { Text("Dosis") }, 
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(24.dp),
                     colors = TextFieldDefaults.colors(
@@ -463,7 +463,7 @@ fun MedicationEditDialog(
                 OutlinedTextField(
                     value = stock, 
                     onValueChange = { stock = it }, 
-                    label = { Text("Voorraad (aantal)") }, 
+                    label = { Text("Stock (cantidad)") }, 
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(24.dp),
                     colors = TextFieldDefaults.colors(
@@ -474,7 +474,7 @@ fun MedicationEditDialog(
                     )
                 )
                 
-                Text("Herhaal op:", fontWeight = FontWeight.Black, color = Color.White)
+                Text("Repetir los días:", fontWeight = FontWeight.Black, color = Color.White)
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     for (i in 1..7) {
                         val isSelected = selectedDays.contains(i)
@@ -509,11 +509,11 @@ fun MedicationEditDialog(
                     ) {
                         Icon(Icons.Default.PhotoLibrary, null)
                         Spacer(Modifier.width(8.dp))
-                        Text("KIES FOTO", fontWeight = FontWeight.Black)
+                        Text("ELEGIR FOTO", fontWeight = FontWeight.Black)
                     }
                 }
 
-                Text("Tijden:", fontWeight = FontWeight.Black, color = Color.White)
+                Text("Horarios:", fontWeight = FontWeight.Black, color = Color.White)
                 selectedTimes.forEach { time ->
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
@@ -543,14 +543,14 @@ fun MedicationEditDialog(
                 ) {
                     Icon(Icons.Default.Add, null, tint = Color.White)
                     Spacer(Modifier.width(8.dp))
-                    Text("TIJD TOEVOEGEN", fontWeight = FontWeight.Black, color = Color.White)
+                    Text("AGREGAR HORARIO", fontWeight = FontWeight.Black, color = Color.White)
                 }
 
                 Spacer(Modifier.height(16.dp))
                 
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     TextButton(onClick = onDismiss, modifier = Modifier.weight(1f).height(70.dp)) { 
-                        Text("ANNULEREN", color = Color.White.copy(alpha = 0.6f), fontWeight = FontWeight.Black) 
+                        Text("CANCELAR", color = Color.White.copy(alpha = 0.6f), fontWeight = FontWeight.Black) 
                     }
                     Button(
                         modifier = Modifier.weight(1f).height(70.dp),
@@ -567,7 +567,7 @@ fun MedicationEditDialog(
                                 photoUri = photoUri?.toString()
                             ))
                         }
-                    ) { Text("OPSLAAN", fontWeight = FontWeight.Black) }
+                    ) { Text("GUARDAR", fontWeight = FontWeight.Black) }
                 }
             }
         }

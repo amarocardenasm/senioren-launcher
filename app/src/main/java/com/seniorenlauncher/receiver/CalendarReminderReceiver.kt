@@ -21,7 +21,7 @@ class CalendarReminderReceiver : BroadcastReceiver() {
         @OptIn(DelicateCoroutinesApi::class)
         GlobalScope.launch(Dispatchers.IO) {
             try {
-                var eventTitle = "Geplande afspraak"
+                var eventTitle = "Cita programada"
                 var startTime: Long = -1
                 var eventId: Long = System.currentTimeMillis()
 
@@ -51,8 +51,8 @@ class CalendarReminderReceiver : BroadcastReceiver() {
                 val eventHour = cal.get(Calendar.HOUR_OF_DAY)
                 val eventMinute = cal.get(Calendar.MINUTE)
 
-                val eventTimeString = if (eventMinute == 0) "om $eventHour uur" else "om $eventHour uur $eventMinute"
-                val ttsLabel = "U heeft een afspraak voor $eventTitle $eventTimeString."
+                val eventTimeString = if (eventMinute == 0) "a las $eventHour horas" else "a las $eventHour horas con $eventMinute minutos"
+                val ttsLabel = "Usted tiene una cita: $eventTitle $eventTimeString."
 
                 // 2. Bouw de Intent (EXTREEM DWINGEND)
                 val notificationId = 9999
@@ -81,7 +81,7 @@ class CalendarReminderReceiver : BroadcastReceiver() {
                 // 3. Bouw de Notificatie
                 val notification = NotificationCompat.Builder(context, LauncherApp.CH_CALENDAR)
                     .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
-                    .setContentTitle("📅 AFSPRAAK")
+                    .setContentTitle("📅 CITA")
                     .setContentText(eventTitle)
                     .setPriority(NotificationCompat.PRIORITY_MAX)
                     .setCategory(NotificationCompat.CATEGORY_ALARM)
@@ -102,11 +102,11 @@ class CalendarReminderReceiver : BroadcastReceiver() {
                 try {
                     context.startActivity(fullScreenIntent)
                 } catch (e: Exception) {
-                    Log.e("CalendarReminder", "Directe start mislukt, FullScreenIntent doet hopelijk het werk")
+                    Log.e("CalendarReminder", "No se pudo abrir directamente, se espera que la pantalla completa funcione")
                 }
 
             } catch (e: Exception) {
-                Log.e("CalendarReminder", "Fout", e)
+                Log.e("CalendarReminder", "Error", e)
             } finally {
                 pendingResult.finish()
             }

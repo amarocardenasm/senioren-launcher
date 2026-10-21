@@ -37,20 +37,20 @@ fun EmergencyInfoScreen(onBack: () -> Unit) {
     
     // --- DUMMY DATA ---
     val dummyInfo = EmergencyInfo(
-        fullName = "Hendrik de Jong",
+        fullName = "Juan Pérez",
         birthDate = "12-05-1945",
-        address = "Hoofdstraat 42, Amsterdam",
+        address = "Av. Principal 42, Santiago",
         bloodType = "A+",
-        allergies = "Geen",
-        conditions = "Hoge bloeddruk",
-        doctorName = "Huisarts de Vries",
+        allergies = "Ninguna",
+        conditions = "Presión alta",
+        doctorName = "Dr. González",
         doctorPhone = "020 555 0123",
-        iceContactName = "Dochter Sofie",
+        iceContactName = "Hija Sofía",
         iceContactPhone = "06 12345678",
         hasPacemaker = false
     )
     val dummyMeds = listOf(
-        Medication(name = "Bloeddruk", dose = "1 pil", times = "08:00")
+        Medication(name = "Presión arterial", dose = "1 pastilla", times = "08:00")
     )
 
     val currentInfo = if (isDemoMode) dummyInfo else realInfo ?: EmergencyInfo()
@@ -59,7 +59,7 @@ fun EmergencyInfoScreen(onBack: () -> Unit) {
     var showEditDialog by remember { mutableStateOf(false) }
 
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(horizontal = 12.dp, vertical = 8.dp)) {
-        ScreenHeader(title = "Noodinfo", onBack = onBack)
+        ScreenHeader(title = "Ficha médica", onBack = onBack)
         
         Box(modifier = Modifier.weight(1f)) {
             Column(
@@ -70,24 +70,24 @@ fun EmergencyInfoScreen(onBack: () -> Unit) {
             ) {
                 // Medische informatie
                 EmergencySection(
-                    title = "🏥 Medische informatie",
+                    title = "🏥 Información médica",
                     titleColor = Color(0xFFEF4444),
                     backgroundColor = Color(0xFFEF4444).copy(alpha = 0.1f)
                 ) {
-                    EmergencyRow("Bloedgroep", currentInfo.bloodType)
-                    EmergencyRow("Allergieën", currentInfo.allergies)
-                    EmergencyRow("Aandoeningen", currentInfo.conditions)
-                    EmergencyRow("Pacemaker", if (currentInfo.hasPacemaker) "Ja" else "Nee")
+                    EmergencyRow("Grupo sanguíneo", currentInfo.bloodType)
+                    EmergencyRow("Alergias", currentInfo.allergies)
+                    EmergencyRow("Enfermedades", currentInfo.conditions)
+                    EmergencyRow("Marcapasos", if (currentInfo.hasPacemaker) "Ja" else "No")
                 }
 
                 // Medicijnen
                 EmergencySection(
-                    title = "💊 Huidige medicijnen",
+                    title = "💊 Medicamentos actuales",
                     titleColor = Color(0xFF3B82F6),
                     backgroundColor = Color(0xFF3B82F6).copy(alpha = 0.1f)
                 ) {
                     if (medications.isEmpty()) {
-                        Text("Geen medicijnen geregistreerd", fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("No hay medicamentos registrados", fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     } else {
                         medications.forEach { med ->
                             Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -103,24 +103,24 @@ fun EmergencyInfoScreen(onBack: () -> Unit) {
 
                 // ICE Contacten
                 EmergencySection(
-                    title = "📱 ICE Contacten",
+                    title = "📱 Contactos de emergencia",
                     titleColor = Color(0xFF10B981),
                     backgroundColor = Color(0xFF10B981).copy(alpha = 0.1f)
                 ) {
-                    EmergencyRow("Naam", currentInfo.iceContactName.ifBlank { "Niet ingesteld" })
-                    EmergencyRow("Telefoonnummer", currentInfo.iceContactPhone.ifBlank { "Niet ingesteld" })
+                    EmergencyRow("Nombre", currentInfo.iceContactName.ifBlank { "No configurado" })
+                    EmergencyRow("Número de teléfono", currentInfo.iceContactPhone.ifBlank { "No configurado" })
                 }
 
                 // Persoonlijke info
                 EmergencySection(
-                    title = "🏠 Persoonlijke info",
+                    title = "🏠 Información personal",
                     titleColor = Color(0xFFF59E0B),
                     backgroundColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                 ) {
-                    EmergencyRow("Naam", currentInfo.fullName)
-                    EmergencyRow("Geboortedatum", currentInfo.birthDate)
-                    EmergencyRow("Adres", currentInfo.address)
-                    EmergencyRow("Huisarts", "${currentInfo.doctorName} — ${currentInfo.doctorPhone}")
+                    EmergencyRow("Nombre", currentInfo.fullName)
+                    EmergencyRow("Fecha de nacimiento", currentInfo.birthDate)
+                    EmergencyRow("Dirección", currentInfo.address)
+                    EmergencyRow("Médico de cabecera", "${currentInfo.doctorName} — ${currentInfo.doctorPhone}")
                 }
                 
                 Spacer(Modifier.height(80.dp))
@@ -136,7 +136,7 @@ fun EmergencyInfoScreen(onBack: () -> Unit) {
                     contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                     shape = RoundedCornerShape(16.dp)
                 ) {
-                    Icon(Icons.Default.Edit, contentDescription = "Bewerken", modifier = Modifier.size(36.dp))
+                    Icon(Icons.Default.Edit, contentDescription = "Editar", modifier = Modifier.size(36.dp))
                 }
             }
         }
@@ -157,32 +157,32 @@ fun EmergencyInfoScreen(onBack: () -> Unit) {
 
         AlertDialog(
             onDismissRequest = { showEditDialog = false },
-            title = { Text("Noodinfo Bewerken", fontWeight = FontWeight.Bold) },
+            title = { Text("Editar ficha médica", fontWeight = FontWeight.Bold) },
             text = {
                 Column(
                     Modifier.verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text("Persoonlijk", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                    OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Volledige Naam") })
-                    OutlinedTextField(value = birth, onValueChange = { birth = it }, label = { Text("Geboortedatum") })
-                    OutlinedTextField(value = addr, onValueChange = { addr = it }, label = { Text("Adres") })
+                    Text("Personal", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Nombre completo") })
+                    OutlinedTextField(value = birth, onValueChange = { birth = it }, label = { Text("Fecha de nacimiento") })
+                    OutlinedTextField(value = addr, onValueChange = { addr = it }, label = { Text("Dirección") })
                     
                     Spacer(Modifier.height(8.dp))
-                    Text("ICE Contact (In Case of Emergency)", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                    OutlinedTextField(value = iceName, onValueChange = { iceName = it }, label = { Text("Naam Contactpersoon") })
-                    OutlinedTextField(value = icePhone, onValueChange = { icePhone = it }, label = { Text("Telefoonnummer Contactpersoon") })
+                    Text("Contacto de emergencia", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    OutlinedTextField(value = iceName, onValueChange = { iceName = it }, label = { Text("Nombre del contacto") })
+                    OutlinedTextField(value = icePhone, onValueChange = { icePhone = it }, label = { Text("Teléfono del contacto") })
 
                     Spacer(Modifier.height(8.dp))
-                    Text("Medisch", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                    OutlinedTextField(value = blood, onValueChange = { blood = it }, label = { Text("Bloedgroep") })
-                    OutlinedTextField(value = allergies, onValueChange = { allergies = it }, label = { Text("Allergieën") })
-                    OutlinedTextField(value = conditions, onValueChange = { conditions = it }, label = { Text("Aandoeningen") })
-                    OutlinedTextField(value = docName, onValueChange = { docName = it }, label = { Text("Huisarts Naam") })
-                    OutlinedTextField(value = docPhone, onValueChange = { docPhone = it }, label = { Text("Huisarts Telefoon") })
+                    Text("Médico", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    OutlinedTextField(value = blood, onValueChange = { blood = it }, label = { Text("Grupo sanguíneo") })
+                    OutlinedTextField(value = allergies, onValueChange = { allergies = it }, label = { Text("Alergias") })
+                    OutlinedTextField(value = conditions, onValueChange = { conditions = it }, label = { Text("Enfermedades") })
+                    OutlinedTextField(value = docName, onValueChange = { docName = it }, label = { Text("Nombre del médico") })
+                    OutlinedTextField(value = docPhone, onValueChange = { docPhone = it }, label = { Text("Teléfono del médico") })
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(checked = pacemaker, onCheckedChange = { pacemaker = it })
-                        Text("Heeft Pacemaker")
+                        Text("Tiene marcapasos")
                     }
                 }
             },
@@ -197,10 +197,10 @@ fun EmergencyInfoScreen(onBack: () -> Unit) {
                         ))
                         showEditDialog = false
                     }
-                }) { Text("Opslaan") }
+                }) { Text("Guardar") }
             },
             dismissButton = {
-                TextButton(onClick = { showEditDialog = false }) { Text("Annuleren") }
+                TextButton(onClick = { showEditDialog = false }) { Text("Cancelar") }
             }
         )
     }

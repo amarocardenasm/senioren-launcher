@@ -99,7 +99,7 @@ fun PinDialog(
                     .verticalScroll(scrollState),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("BEVEILIGDE INSTELLINGEN", fontSize = 22.sp, fontWeight = FontWeight.Black, color = Color.White)
+                Text("AJUSTES PROTEGIDOS", fontSize = 22.sp, fontWeight = FontWeight.Black, color = Color.White)
                 
                 Spacer(Modifier.height(24.dp))
                 
@@ -197,9 +197,10 @@ fun AppPickerDialog(
     onRemove: () -> Unit
 ) {
     val context = LocalContext.current
-    val installedApps by produceState<List<InstalledApp>>(initialValue = emptyList(), context) {
+    val loadedApps by produceState<List<InstalledApp>?>(initialValue = null, context) {
         value = AppLauncher.getInstalledApps(context, includeIcons = true)
     }
+    val installedApps = loadedApps ?: emptyList()
     var searchQuery by remember { mutableStateOf("") }
     val selectedPackages = remember { mutableStateListOf<String>() }
 
@@ -217,7 +218,7 @@ fun AppPickerDialog(
         ) {
             Column(Modifier.padding(24.dp)) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("KIES APPS", fontSize = 24.sp, fontWeight = FontWeight.Black, color = Color.White)
+                    Text("ELEGIR APPS", fontSize = 24.sp, fontWeight = FontWeight.Black, color = Color.White)
                     if (appId.startsWith("mapped_")) {
                         val interactionSource = remember { MutableInteractionSource() }
                         val pressed by interactionSource.collectIsPressedAsState()
@@ -230,18 +231,25 @@ fun AppPickerDialog(
                             interactionSource = interactionSource,
                             modifier = Modifier.scale(scale)
                         ) {
-                            Text("VERWIJDEREN", color = Color(0xFFEF4444), fontWeight = FontWeight.Black)
+                            Text("ELIMINAR", color = Color(0xFFEF4444), fontWeight = FontWeight.Black)
                         }
                     }
                 }
                 
+                Text(
+                    "Toque las apps que quiere ver en su pantalla de inicio.",
+                    fontSize = 18.sp,
+                    color = Color(0xFFCBD5E1),
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+
                 Spacer(Modifier.height(16.dp))
 
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("Zoek app...", fontWeight = FontWeight.Bold, color = Color(0xFF94A3B8)) },
+                    placeholder = { Text("Busque una app...", fontWeight = FontWeight.Bold, color = Color(0xFF94A3B8)) },
                     leadingIcon = { Icon(Icons.Default.Search, null, tint = Color(0xFF94A3B8)) },
                     shape = RoundedCornerShape(20.dp),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -256,7 +264,11 @@ fun AppPickerDialog(
 
                 Spacer(Modifier.height(16.dp))
                 
-                LazyColumn(Modifier.weight(1f)) {
+                if (loadedApps == null) {
+                    Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = Color.White)
+                    }
+                } else LazyColumn(Modifier.weight(1f)) {
                     items(filteredApps) { app ->
                         val isSelected = selectedPackages.contains(app.packageName)
                         val interactionSource = remember { MutableInteractionSource() }
@@ -314,7 +326,7 @@ fun AppPickerDialog(
                         border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f)),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
                     ) {
-                        Text("ANNULEREN", fontWeight = FontWeight.Black)
+                        Text("CANCELAR", fontWeight = FontWeight.Black)
                     }
 
                     val addInteractionSource = remember { MutableInteractionSource() }
@@ -332,7 +344,7 @@ fun AppPickerDialog(
                         shape = RoundedCornerShape(40.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B82F6))
                     ) {
-                        Text("VOEG TOE", fontWeight = FontWeight.Black)
+                        Text("AGREGAR", fontWeight = FontWeight.Black)
                     }
                 }
             }
@@ -357,8 +369,8 @@ fun WifiDialog(
 
     if (!hasPermission) {
         PermissionRequestDialog(
-            title = "Wifi Toegang",
-            description = "Om wifi informatie te kunnen tonen, hebben we toestemming nodig om nabijgelegen apparaten te scannen.",
+            title = "Permiso de Wi-Fi",
+            description = "Para mostrar información del Wi-Fi, necesitamos permiso para buscar dispositivos cercanos.",
             onDismiss = onDismiss,
             onGrant = {
                 permissionLauncher.launch(PermissionUtils.getRequiredWifiPermissions().toTypedArray())
@@ -374,7 +386,7 @@ fun WifiDialog(
         WifiManager.calculateSignalLevel(wifiInfo.rssi, 5)
     } else 0
     
-    val ssid = wifiInfo?.ssid?.removeSurrounding("\"") ?: "Niet verbonden"
+    val ssid = wifiInfo?.ssid?.removeSurrounding("\"") ?: "No conectado"
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -387,7 +399,7 @@ fun WifiDialog(
                 Modifier.padding(32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("WIFI VERBINDING", fontSize = 28.sp, fontWeight = FontWeight.Black, color = Color.White)
+                Text("CONEXIÓN WI-FI", fontSize = 28.sp, fontWeight = FontWeight.Black, color = Color.White)
                 Spacer(Modifier.height(24.dp))
                 
                 val wifiIcon = when {
@@ -408,7 +420,7 @@ fun WifiDialog(
                 
                 if (isWifiEnabled) {
                     Text(
-                        "VERBONDEN MET:",
+                        "CONECTADO A:",
                         fontSize = 16.sp,
                         color = Color(0xFFCBD5E1),
                         fontWeight = FontWeight.Bold
@@ -422,14 +434,14 @@ fun WifiDialog(
                     )
                     
                     val strengthText = when(signalLevel) {
-                        0 -> "Geen signaal"
-                        1 -> "Zwak signaal"
-                        2 -> "Matig signaal"
-                        3 -> "Goed signaal"
-                        else -> "Uitstekend signaal"
+                        0 -> "Sin señal"
+                        1 -> "Señal débil"
+                        2 -> "Señal regular"
+                        3 -> "Buena señal"
+                        else -> "Señal excelente"
                     }
                     Text(
-                        "Signaalsterkte: $strengthText",
+                        "Intensidad de la señal: $strengthText",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White.copy(alpha = 0.7f),
@@ -437,7 +449,7 @@ fun WifiDialog(
                     )
                 } else {
                     Text(
-                        "UW WIFI STAAT UIT",
+                        "SU WI-FI ESTÁ APAGADO",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Black,
                         textAlign = TextAlign.Center,
@@ -464,7 +476,7 @@ fun WifiDialog(
                     shape = RoundedCornerShape(40.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B82F6))
                 ) {
-                    Text("WIFI INSTELLINGEN", fontSize = 20.sp, fontWeight = FontWeight.Black)
+                    Text("AJUSTES DE WI-FI", fontSize = 20.sp, fontWeight = FontWeight.Black)
                 }
                 
                 Spacer(Modifier.height(16.dp))
@@ -484,7 +496,7 @@ fun WifiDialog(
                     border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f)),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
                 ) {
-                    Text("TERUG", fontSize = 18.sp, fontWeight = FontWeight.Black)
+                    Text("VOLVER", fontSize = 18.sp, fontWeight = FontWeight.Black)
                 }
             }
         }
@@ -542,7 +554,7 @@ fun PermissionRequestDialog(
                     shape = RoundedCornerShape(40.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B82F6))
                 ) {
-                    Text("TOESTAAN", fontSize = 20.sp, fontWeight = FontWeight.Black)
+                    Text("PERMITIR", fontSize = 20.sp, fontWeight = FontWeight.Black)
                 }
                 Spacer(Modifier.height(16.dp))
 
@@ -552,10 +564,10 @@ fun PermissionRequestDialog(
                     }
                     context.startActivity(intent)
                 }) {
-                    Text("HANDMATIG INSTELLEN", fontWeight = FontWeight.Black, color = Color(0xFF3B82F6))
+                    Text("CONFIGURAR MANUALMENTE", fontWeight = FontWeight.Black, color = Color(0xFF3B82F6))
                 }
                 TextButton(onClick = onDismiss) {
-                    Text("ANNULEREN", color = Color(0xFFCBD5E1), fontWeight = FontWeight.Black)
+                    Text("CANCELAR", color = Color(0xFFCBD5E1), fontWeight = FontWeight.Black)
                 }
             }
         }
@@ -594,7 +606,7 @@ fun BluetoothDialog(
                 Spacer(Modifier.height(24.dp))
                 
                 Text(
-                    if (isBluetoothEnabled) "BLUETOOTH STAAT AAN" else "BLUETOOTH STAAT UIT",
+                    if (isBluetoothEnabled) "EL BLUETOOTH ESTÁ ENCENDIDO" else "EL BLUETOOTH ESTÁ APAGADO",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Black,
                     textAlign = TextAlign.Center,
@@ -620,7 +632,7 @@ fun BluetoothDialog(
                     shape = RoundedCornerShape(40.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B82F6))
                 ) {
-                    Text("INSTELLINGEN", fontSize = 20.sp, fontWeight = FontWeight.Black)
+                    Text("AJUSTES", fontSize = 20.sp, fontWeight = FontWeight.Black)
                 }
                 
                 Spacer(Modifier.height(16.dp))
@@ -640,7 +652,7 @@ fun BluetoothDialog(
                     border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f)),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
                 ) {
-                    Text("TERUG", fontSize = 18.sp, fontWeight = FontWeight.Black)
+                    Text("VOLVER", fontSize = 18.sp, fontWeight = FontWeight.Black)
                 }
             }
         }

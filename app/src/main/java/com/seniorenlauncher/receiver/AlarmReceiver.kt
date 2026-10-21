@@ -12,7 +12,7 @@ import com.seniorenlauncher.MainActivity
 
 class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        val label = intent.getStringExtra("ALARM_LABEL") ?: "Wekker"
+        val label = intent.getStringExtra("ALARM_LABEL") ?: "Alarma"
         val alarmId = intent.getLongExtra("ALARM_ID", -1L)
         val soundUri = intent.getStringExtra("ALARM_SOUND")
         val hour = intent.getIntExtra("ALARM_HOUR", -1)
@@ -47,8 +47,8 @@ class AlarmReceiver : BroadcastReceiver() {
 
         val notification = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
-            .setContentTitle("⏰ WEKKER")
-            .setContentText("Tik om te openen: $label")
+            .setContentTitle("⏰ ALARMA")
+            .setContentText("Toque para abrir: $label")
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setFullScreenIntent(pendingIntent, true)

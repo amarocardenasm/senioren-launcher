@@ -34,7 +34,7 @@ class FallDetectionService : Service(), SensorEventListener {
         }
 
         val notification = NotificationCompat.Builder(this, LauncherApp.CH_GENERAL)
-            .setContentTitle("Valdetectie actief")
+            .setContentTitle("Detección de caídas activa")
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setOngoing(true)
             .build()

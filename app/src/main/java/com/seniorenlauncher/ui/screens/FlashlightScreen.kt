@@ -39,7 +39,7 @@ fun FlashlightScreen(onBack: () -> Unit) {
     }
 
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(horizontal = 12.dp, vertical = 8.dp)) {
-        ScreenHeader(title = "Zaklamp", onBack = onBack)
+        ScreenHeader(title = "Linterna", onBack = onBack)
         
         Column(
             Modifier.weight(1f).fillMaxWidth(),
@@ -47,7 +47,7 @@ fun FlashlightScreen(onBack: () -> Unit) {
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                if (isFlashOn) "De zaklamp is AAN" else "De zaklamp is UIT",
+                if (isFlashOn) "La linterna está ENCENDIDA" else "La linterna está APAGADA",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
@@ -97,7 +97,7 @@ fun FlashlightScreen(onBack: () -> Unit) {
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Text(
-                    if (isFlashOn) "ZET UIT" else "ZET AAN",
+                    if (isFlashOn) "APAGAR" else "ENCENDER",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.ExtraBold
                 )
