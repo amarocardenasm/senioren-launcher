@@ -227,16 +227,3 @@ fun HomeStatusCard(
     }
 }
 
-fun getHomeWeatherEmoji(iconUrl: String): String {
-    return when {
-        iconUrl.contains("01d") -> "☀️"
-        iconUrl.contains("01n") -> "🌙"
-        iconUrl.contains("02d") || iconUrl.contains("02n") -> "⛅"
-        iconUrl.contains("03") || iconUrl.contains("04") -> "☁️"
-        iconUrl.contains("09") || iconUrl.contains("10") -> "🌧️"
-        iconUrl.contains("11") -> "⛈️"
-        iconUrl.contains("13") -> "❄️"
-        iconUrl.contains("50") -> "🌫️"
-        else -> "☁️"
-    }
-}

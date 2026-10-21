@@ -63,13 +63,11 @@ fun SetupWizardScreen(
         WizardSetupFlow.CAREGIVER -> {
             when (caregiverStep) {
                 1 -> PermissionsSetupScreen(onNext = { caregiverStep = 2 }, isSenior = false)
-                2 -> SystemPermissionsSetupScreen(onNext = { caregiverStep = 3 }, isSenior = false)
-                3 -> DefaultAppsSetupScreen(onNext = { caregiverStep = 4 }, isSenior = false)
-                4 -> SafeInternetStep(onNext = { caregiverStep = 5 })
-                5 -> SosSetupScreen(onNext = { caregiverStep = 6 }, settingsVm = settingsVm)
-                6 -> FallDetectionSetupScreen(onNext = { caregiverStep = 7 }, settingsVm = settingsVm)
-                7 -> SecuritySetupScreen(onNext = { caregiverStep = 8 }, settingsVm = settingsVm)
-                8 -> HandoverScreen(onNext = {
+                2 -> DefaultAppsSetupScreen(onNext = { caregiverStep = 3 }, isSenior = false)
+                3 -> SafeInternetStep(onNext = { caregiverStep = 4 })
+                4 -> SosSetupScreen(onNext = { caregiverStep = 5 }, settingsVm = settingsVm)
+                5 -> FallDetectionSetupScreen(onNext = { caregiverStep = 6 }, settingsVm = settingsVm)
+                6 -> HandoverScreen(onNext = {
                     // El familiar ya hizo la parte tecnica: la persona solo elige letras y colores
                     flow = WizardSetupFlow.SENIOR
                     seniorStep = SENIOR_STEP_READING
@@ -88,8 +86,7 @@ fun SetupWizardScreen(
                 1 -> SeniorWelcomeStep(onNext = { seniorStep = SENIOR_STEP_READING })
                 SENIOR_STEP_READING -> SeniorReadingStep(onNext = { seniorStep = 3 }, settingsVm = settingsVm)
                 3 -> SeniorColorsStep(onNext = { seniorStep = if (technicalDone) 8 else 4 }, settingsVm = settingsVm)
-                4 -> PermissionsSetupScreen(onNext = { seniorStep = 5 }, isSenior = true)
-                5 -> SystemPermissionsSetupScreen(onNext = { seniorStep = 6 }, isSenior = true)
+                4 -> PermissionsSetupScreen(onNext = { seniorStep = 6 }, isSenior = true)
                 6 -> DefaultAppsSetupScreen(onNext = { seniorStep = 7 }, isSenior = true)
                 7 -> SafeInternetStep(onNext = { seniorStep = 8 })
                 8 -> {

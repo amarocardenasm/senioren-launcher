@@ -8,6 +8,7 @@ import android.graphics.Canvas
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.provider.MediaStore
+import android.provider.Settings
 import android.provider.Telephony
 import androidx.compose.ui.graphics.Color
 import android.graphics.Color as AColor
@@ -34,12 +35,25 @@ object DefaultApps {
             "camera" -> resolve(pm, Intent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA))
                 ?: resolve(pm, Intent(MediaStore.ACTION_IMAGE_CAPTURE))
             "sms" -> Telephony.Sms.getDefaultSmsPackage(context)
+            "email" -> firstInstalled(pm, "com.google.android.gm")
+                ?: resolve(pm, Intent.makeMainSelectorActivity(Intent.ACTION_MAIN, Intent.CATEGORY_APP_EMAIL))
+                ?: firstInstalled(pm, "com.samsung.android.email.provider", "com.microsoft.office.outlook")
+            "settings" -> resolve(pm, Intent(Settings.ACTION_SETTINGS)) ?: "com.android.settings"
+            // No existe una "app de clima predeterminada" en Android: usamos la del fabricante
+            "weather" -> firstInstalled(
+                pm,
+                "com.sec.android.daemonapp",      // Samsung
+                "com.miui.weather2",              // Xiaomi
+                "com.motorola.timeweatherwidget", // Motorola
+                "com.huawei.android.totemweather" // Huawei
+            )
             else -> null
         }
     }
 
     /** Abre la app predeterminada; devuelve false si no se pudo. */
     fun open(context: Context, appId: String): Boolean {
+        if (appId == "settings") return start(context, Intent(Settings.ACTION_SETTINGS))
         val pkg = packageFor(context, appId) ?: return false
         val intent = context.packageManager.getLaunchIntentForPackage(pkg) ?: return false
         return try {
@@ -48,6 +62,13 @@ object DefaultApps {
         } catch (e: Exception) {
             false
         }
+    }
+
+    private fun start(context: Context, intent: Intent): Boolean = try {
+        context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        true
+    } catch (e: Exception) {
+        false
     }
 
     fun icon(context: Context, pkg: String): Drawable? = try {

@@ -1,180 +1,210 @@
 package com.seniorenlauncher.ui.components
 
 import android.graphics.drawable.Drawable
+import android.view.HapticFeedbackConstants
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import coil.compose.rememberAsyncImagePainter
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.math.hypot
 
-@OptIn(ExperimentalFoundationApi::class)
+/** Cuanto hay que mantener presionado un boton para las opciones (quitar). */
+const val LONG_PRESS_MS = 1500L
+
+/**
+ * Boton grande del inicio.
+ * - Un toque: vibra un poco y, si abre otra app, muestra "Abriendo…" y
+ *   no acepta otro toque hasta que la app aparezca (evita abrirla dos veces).
+ * - Mantener presionado: un circulo blanco crece desde el dedo hasta llenar
+ *   el boton; solo al completarse (1,5 s) se activa la opcion.
+ */
 @Composable
 fun BigButton(
     emoji: String? = null,
     icon: Drawable? = null,
     vectorIcon: ImageVector? = null,
-    label: String, 
-    color: Color, 
+    label: String,
+    color: Color,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier, 
+    modifier: Modifier = Modifier,
     onLongClick: (() -> Unit)? = null,
-    badge: Int? = null, 
-    small: Boolean = false,
-    weatherText: String? = null
+    badge: Int? = null,
+    opensOtherApp: Boolean = false
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val pressed by interactionSource.collectIsPressedAsState()
-    val scale by animateFloatAsState(
-        targetValue = if (pressed) 0.94f else 1f,
-        animationSpec = spring(dampingRatio = 0.7f, stiffness = 500f),
-        label = "scale"
-    )
-    
-    val buttonHeight = if (small) 120.dp else 168.dp
-    val cornerRadius = 40.dp
+    val view = LocalView.current
+    val scope = rememberCoroutineScope()
+    val holdProgress = remember { Animatable(0f) }
+    var pressPoint by remember { mutableStateOf(Offset.Zero) }
+    var pressed by remember { mutableStateOf(false) }
+    var opening by remember { mutableStateOf(false) }
+    val currentOnClick by rememberUpdatedState(onClick)
+    val currentOnLongClick by rememberUpdatedState(onLongClick)
+
+    val scale by animateFloatAsState(if (pressed) 0.96f else 1f, label = "scale")
+
+    // "Abriendo…" se quita cuando volvemos al launcher o tras unos segundos
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) opening = false
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+    LaunchedEffect(opening) {
+        if (opening) {
+            delay(4000)
+            opening = false
+        }
+    }
+
+    val shape = RoundedCornerShape(36.dp)
 
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(buttonHeight)
             .scale(scale)
-            .shadow(
-                elevation = if (pressed) 2.dp else 8.dp,
-                shape = RoundedCornerShape(cornerRadius),
-                ambientColor = color.copy(alpha = 0.3f),
-                spotColor = color
-            )
-            .clip(RoundedCornerShape(cornerRadius))
+            .clip(shape)
             .background(color)
-            .border(
-                width = 1.dp,
-                color = Color.White.copy(alpha = 0.15f),
-                shape = RoundedCornerShape(cornerRadius)
-            )
-            .combinedClickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onClick,
-                onLongClick = onLongClick
-            ),
+            .border(1.dp, Color.White.copy(alpha = 0.15f), shape)
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onPress = onPress@{ offset ->
+                        if (opening) return@onPress
+                        pressPoint = offset
+                        pressed = true
+                        val canHold = currentOnLongClick != null
+                        val anim = if (canHold) scope.launch {
+                            delay(150) // un toque normal no muestra el circulo
+                            holdProgress.animateTo(1f, tween((LONG_PRESS_MS - 150).toInt(), easing = LinearEasing))
+                        } else null
+                        val released = withTimeoutOrNull(if (canHold) LONG_PRESS_MS else Long.MAX_VALUE) {
+                            tryAwaitRelease()
+                        }
+                        anim?.cancel()
+                        pressed = false
+                        when {
+                            released == null -> {
+                                // Mantuvo presionado el tiempo completo
+                                view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+                                currentOnLongClick?.invoke()
+                                tryAwaitRelease()
+                            }
+                            released -> {
+                                view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                                if (opensOtherApp) opening = true
+                                currentOnClick()
+                            }
+                        }
+                        scope.launch { holdProgress.animateTo(0f, tween(200)) }
+                    }
+                )
+            },
         contentAlignment = Alignment.Center
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 10.dp)
         ) {
-            Box(contentAlignment = Alignment.Center) {
-                if (vectorIcon != null) {
-                    Icon(
-                        imageVector = vectorIcon,
-                        contentDescription = null,
-                        modifier = Modifier.size(if (small) 44.dp else 60.dp),
-                        tint = Color.White
-                    )
-                } else if (icon != null) {
-                    Image(
-                        painter = rememberAsyncImagePainter(icon),
-                        contentDescription = null,
-                        modifier = Modifier.size(if (small) 48.dp else 68.dp),
-                        contentScale = ContentScale.Fit
-                    )
-                } else if (emoji != null) {
-                    Text(
-                        emoji, 
-                        fontSize = if (small) 40.sp else 56.sp,
-                        style = androidx.compose.ui.text.TextStyle(
-                            shadow = androidx.compose.ui.graphics.Shadow(
-                                color = Color.Black.copy(alpha = 0.25f),
-                                offset = androidx.compose.ui.geometry.Offset(2f, 4f),
-                                blurRadius = 12f
-                            )
-                        )
-                    )
-                }
-                
-                if (weatherText != null) {
-                    Surface(
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .offset(x = 10.dp, y = 10.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        color = Color.Black.copy(alpha = 0.5f),
-                        border = BorderStroke(0.5.dp, Color.White.copy(alpha = 0.2f))
-                    ) {
-                        Text(
-                            weatherText, 
-                            color = Color.White, 
-                            fontSize = 15.sp, 
-                            fontWeight = FontWeight.Black,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                        )
-                    }
-                }
+            val iconMod = Modifier.size(56.dp)
+            when {
+                vectorIcon != null -> Icon(vectorIcon, contentDescription = null, modifier = iconMod, tint = Color.White)
+                icon != null -> Image(
+                    painter = rememberAsyncImagePainter(icon),
+                    contentDescription = null,
+                    modifier = iconMod,
+                    contentScale = ContentScale.Fit
+                )
+                emoji != null -> Text(emoji, fontSize = 44.sp)
             }
-            
-            Spacer(Modifier.height(if (small) 8.dp else 12.dp))
-            
+            Spacer(Modifier.height(8.dp))
             Text(
-                label, 
-                fontSize = if (small) 16.sp else 21.sp, 
+                label,
+                fontSize = 17.sp,
                 fontWeight = FontWeight.Black,
-                color = Color.White, 
-                textAlign = TextAlign.Center, 
+                color = Color.White,
+                textAlign = TextAlign.Center,
                 maxLines = 2,
-                lineHeight = if (small) 18.sp else 24.sp,
+                lineHeight = 20.sp,
                 overflow = TextOverflow.Ellipsis
             )
         }
-        
+
+        // Circulo que crece mientras se mantiene presionado
+        if (holdProgress.value > 0f) {
+            Canvas(Modifier.matchParentSize()) {
+                val maxRadius = hypot(size.width, size.height)
+                drawCircle(
+                    color = Color.White.copy(alpha = 0.35f),
+                    radius = maxRadius * holdProgress.value,
+                    center = pressPoint
+                )
+            }
+        }
+
+        // Abriendo la app: oscurece y muestra una ruedita
+        if (opening) {
+            Box(
+                Modifier.matchParentSize().background(Color.Black.copy(alpha = 0.45f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    CircularProgressIndicator(color = Color.White, strokeWidth = 4.dp, modifier = Modifier.size(40.dp))
+                    Spacer(Modifier.height(6.dp))
+                    Text("Abriendo…", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+
         if (badge != null && badge > 0) {
             Surface(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(14.dp)
-                    .size(34.dp),
+                    .padding(8.dp)
+                    .size(30.dp),
                 shape = CircleShape,
                 color = Color.White,
-                shadowElevation = 8.dp,
                 border = BorderStroke(2.dp, color.copy(alpha = 0.2f))
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Text(
-                        badge.toString(), 
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.Black, 
-                        color = color
-                    )
+                    Text(badge.toString(), fontSize = 15.sp, fontWeight = FontWeight.Black, color = color)
                 }
             }
         }

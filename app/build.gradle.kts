@@ -56,16 +56,9 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.datastore.preferences)
-    implementation(libs.androidx.work.runtime.ktx)
-    implementation(libs.play.services.location)
-    implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.material)
     implementation(libs.coil.compose)
 
-    // Retrofit for Updates
-    implementation(libs.retrofit.core)
-    implementation(libs.retrofit.gson)
-    implementation(libs.okhttp.logging)
 
     // CameraX for Magnifier
     implementation(libs.androidx.camera.core)

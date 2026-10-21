@@ -80,18 +80,6 @@ fun CalendarScreen(onBack: () -> Unit) {
     val scope = rememberCoroutineScope()
     val localeNl = remember { Locale("es", "CL") }
     
-    var canDrawOverlays by remember { mutableStateOf(Settings.canDrawOverlays(context)) }
-    
-    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
-    DisposableEffect(lifecycleOwner) {
-        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
-            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
-                canDrawOverlays = Settings.canDrawOverlays(context)
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
-    }
 
     var hasPermission by remember { 
         mutableStateOf(
@@ -141,23 +129,6 @@ fun CalendarScreen(onBack: () -> Unit) {
     Column(Modifier.fillMaxSize().background(Color(0xFF0F172A)).padding(horizontal = 12.dp, vertical = 8.dp)) {
         ScreenHeader(title = "Agenda", onBack = onBack)
         
-        if (!canDrawOverlays) {
-            Card(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp).clickable {
-                    val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${context.packageName}"))
-                    context.startActivity(intent)
-                },
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFEF4444).copy(alpha = 0.2f)),
-                shape = RoundedCornerShape(40.dp),
-                border = BorderStroke(1.dp, Color(0xFFEF4444).copy(alpha = 0.5f))
-            ) {
-                Row(Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Warning, null, tint = Color(0xFFEF4444), modifier = Modifier.size(32.dp))
-                    Spacer(Modifier.width(16.dp))
-                    Text("Active “Mostrar sobre otras apps” para las alarmas.", fontSize = 16.sp, fontWeight = FontWeight.Black, color = Color.White)
-                }
-            }
-        }
 
         if (!hasPermission) {
             Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {

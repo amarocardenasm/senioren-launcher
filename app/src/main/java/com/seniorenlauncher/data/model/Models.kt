@@ -12,7 +12,7 @@ data class AppSettings(
     val fontSize: Int = 18,
     val language: String = "es",
     val nightModeAuto: Boolean = true,
-    val visibleApps: Set<String> = setOf("phone", "sms", "camera", "photos", "browser", "flashlight", "meds"),
+    val visibleApps: Set<String> = setOf("phone", "sms", "camera", "photos", "browser", "email", "flashlight", "settings", "meds"),
     val appMappings: Map<String, String> = emptyMap(),
     val settingsLocked: Boolean = false,
     val pinCode: String? = null,
@@ -38,11 +38,6 @@ data class QuickContact(
     val photoUri: String? = null
 )
 
-@Entity(tableName = "blocked_numbers")
-data class BlockedNumber(
-    @PrimaryKey val phoneNumber: String,
-    val reason: String = "Bloqueado"
-)
 
 @Entity(tableName = "medications")
 data class Medication(
@@ -122,23 +117,26 @@ data class AppInfo(
     val color: Long
 )
 
+// El orden de esta lista es el orden en el inicio (cuadricula de 3x3).
+// "Mis apps" siempre va fija arriba a la derecha de la primera pagina.
 val ALL_APPS = listOf(
-    AppInfo("phone", "Teléfono", "📞", "📞", 0xFF38A169),
-    AppInfo("sms", "Mensajes", "💬", "💬", 0xFF3B82F6),
-    AppInfo("camera", "Cámara", "📷", "📷", 0xFFEC4899),
-    AppInfo("photos", "Fotos", "🖼️", "🖼️", 0xFFF59E0B),
-    AppInfo("browser", "Internet", "🌐", "🌐", 0xFF2563EB),
-    AppInfo("alarm", "Alarma", "⏰", "⏰", 0xFFEA580C),
-    AppInfo("calendar", "Agenda", "📅", "📅", 0xFF0D9488),
-    AppInfo("meds", "Medicamentos", "💊", "💊", 0xFFDC2626),
-    AppInfo("weather", "Clima", "🌤️", "🌤️", 0xFF0EA5E9),
-    AppInfo("flashlight", "Linterna", "🔦", "🔦", 0xFFFBBF24),
-    AppInfo("magnifier", "Lupa", "🔍", "🔍", 0xFF6366F1),
-    AppInfo("notes", "Notas", "📝", "📝", 0xFF84CC16),
-    AppInfo("wifi", "Wifi", "📶", "📶", 0xFF4A5568),
-    AppInfo("bluetooth", "Bluetooth", "🎧", "🎧", 0xFF4A5568),
-    AppInfo("steps", "Pasos", "🚶", "🚶", 0xFF14B8A6),
-    AppInfo("emergency", "Ficha médica", "🏥", "🏥", 0xFFEF4444),
-    AppInfo("all_apps", "Mis apps", "📱", "📱", 0xFF718096),
-    AppInfo("settings", "Ajustes", "⚙️", "⚙️", 0xFF718096),
+    AppInfo("phone", "Teléfono", "📞", "📞", 0xFF15803D),
+    AppInfo("sms", "Mensajes", "💬", "💬", 0xFF2563EB),
+    AppInfo("camera", "Cámara", "📷", "📷", 0xFFBE185D),
+    AppInfo("photos", "Fotos", "🖼️", "🖼️", 0xFFB45309),
+    AppInfo("browser", "Internet", "🌐", "🌐", 0xFF1D4ED8),
+    AppInfo("email", "Correo", "✉️", "✉️", 0xFFB91C1C),
+    AppInfo("flashlight", "Linterna", "🔦", "🔦", 0xFF475569),
+    AppInfo("settings", "Ajustes", "⚙️", "⚙️", 0xFF475569),
+    AppInfo("meds", "Medicamentos", "💊", "💊", 0xFFB91C1C),
+    AppInfo("alarm", "Alarma", "⏰", "⏰", 0xFFC2410C),
+    AppInfo("calendar", "Agenda", "📅", "📅", 0xFF0F766E),
+    AppInfo("weather", "Clima", "🌤️", "🌤️", 0xFF0369A1),
+    AppInfo("magnifier", "Lupa", "🔍", "🔍", 0xFF4F46E5),
+    AppInfo("notes", "Notas", "📝", "📝", 0xFF4D7C0F),
+    AppInfo("wifi", "Wi-Fi", "📶", "📶", 0xFF475569),
+    AppInfo("bluetooth", "Bluetooth", "🔵", "🔵", 0xFF1D4ED8),
+    AppInfo("steps", "Pasos", "🚶", "🚶", 0xFF0F766E),
+    AppInfo("emergency", "Ficha médica", "🏥", "🏥", 0xFFB91C1C),
+    AppInfo("all_apps", "Mis apps", "📱", "📱", 0xFF334155),
 )

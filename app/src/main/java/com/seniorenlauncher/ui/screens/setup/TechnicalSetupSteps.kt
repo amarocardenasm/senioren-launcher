@@ -38,93 +38,107 @@ import com.seniorenlauncher.data.model.QuickContact
 import com.seniorenlauncher.ui.screens.SettingsViewModel
 import kotlinx.coroutines.launch
 
+/**
+ * Dejar Senior Launcher como pantalla de inicio, con el mismo estilo simple
+ * de los permisos: un icono, una explicacion y un boton.
+ * En Android 10+ aparece la ventana oficial del sistema ("¿Usar como app de inicio?").
+ */
 @Composable
 fun DefaultAppsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
     val context = LocalContext.current
-    
-    var isDefaultHome by remember { mutableStateOf(false) }
+    var isDefaultHome by remember { mutableStateOf(isLauncherDefault(context)) }
 
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
-            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
-                isDefaultHome = isLauncherDefault(context)
-            }
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) isDefaultHome = isLauncherDefault(context)
         }
         lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    val roleLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        isDefaultHome = isLauncherDefault(context)
+    }
+
+    fun askToBeHome() {
+        val roleManager = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) context.getSystemService(RoleManager::class.java) else null
+        if (roleManager != null && roleManager.isRoleAvailable(RoleManager.ROLE_HOME)) {
+            roleLauncher.launch(roleManager.createRequestRoleIntent(RoleManager.ROLE_HOME))
+        } else {
+            context.startActivity(Intent(android.provider.Settings.ACTION_HOME_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         }
     }
 
-    val roleLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
-
-    val allDone = isDefaultHome
-
     Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp).verticalScroll(rememberScrollState()),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF0F172A))
+            .padding(24.dp)
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = if (isSenior) "Su pantalla de inicio" else "Apps predeterminadas",
-            fontSize = if (isSenior) 36.sp else 32.sp,
-            fontWeight = FontWeight.ExtraBold,
-            textAlign = TextAlign.Center,
-            lineHeight = if (isSenior) 42.sp else 38.sp
-        )
-        
-        Spacer(Modifier.height(16.dp))
-        
-        Text(
-            text = if (isSenior) 
-                "Así, cada vez que toque el botón de inicio verá estos botones grandes y simples. Toque el recuadro rojo y elija Senior Launcher."
-                else "Establezca el launcher como app de inicio predeterminada para que funcione de forma estable.",
-            fontSize = if (isSenior) 22.sp else 18.sp, 
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            lineHeight = if (isSenior) 30.sp else 24.sp
-        )
-        
-        Spacer(Modifier.height(32.dp))
-
-        DefaultAppRow(
-            title = if (isSenior) "1. Pantalla de inicio" else "Pantalla de inicio",
-            description = if (isSenior) "Para que siempre vea los botones grandes." else "Establecer como launcher predeterminado.",
-            isGranted = isDefaultHome,
-            icon = Icons.Default.Home,
-            isSenior = isSenior,
-            onClick = {
-                val intent = Intent(Intent.ACTION_MAIN).apply {
-                    addCategory(Intent.CATEGORY_HOME)
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                }
-                context.startActivity(intent)
-            }
-        )
-
-        Spacer(Modifier.weight(1f))
-        Spacer(Modifier.height(32.dp))
-
-        Button(
-            onClick = onNext,
-            modifier = Modifier.fillMaxWidth().height(if (isSenior) 100.dp else 80.dp),
-            shape = RoundedCornerShape(24.dp),
-            enabled = allDone,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if (allDone) Color(0xFF10B981) else Color.Gray
-            )
+        Spacer(Modifier.height(48.dp))
+        Surface(
+            modifier = Modifier.size(120.dp),
+            shape = RoundedCornerShape(40.dp),
+            color = Color(0xFF3B82F6).copy(alpha = 0.1f),
+            border = BorderStroke(1.dp, Color(0xFF3B82F6).copy(alpha = 0.2f))
         ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(Icons.Default.Home, contentDescription = null, modifier = Modifier.size(72.dp), tint = Color(0xFF3B82F6))
+            }
+        }
+        Spacer(Modifier.height(32.dp))
+        Text(
+            "PANTALLA DE INICIO",
+            fontSize = 32.sp,
+            fontWeight = FontWeight.Black,
+            textAlign = TextAlign.Center,
+            color = Color.White
+        )
+        Spacer(Modifier.height(24.dp))
+        Text(
+            if (isDefaultHome) "¡Listo! Cada vez que toque el botón de inicio verá estos botones grandes."
+            else "Para que, al tocar el botón de inicio del teléfono, siempre vea estos botones grandes y simples.",
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            lineHeight = 32.sp,
+            color = Color.White
+        )
+        if (!isDefaultHome) {
+            Spacer(Modifier.height(16.dp))
             Text(
-                text = if (allDone) (if (isSenior) "LISTO, CONTINUAR" else "SIGUIENTE") 
-                       else "TOQUE EL RECUADRO ROJO", 
-                fontSize = if (isSenior) 24.sp else 22.sp, 
-                fontWeight = FontWeight.Black,
-                textAlign = TextAlign.Center
+                "Aparecerá una pregunta del teléfono: elija Senior Launcher.",
+                fontSize = 18.sp,
+                textAlign = TextAlign.Center,
+                lineHeight = 26.sp,
+                color = Color(0xFFCBD5E1)
             )
         }
-        if (!allDone) {
-            TextButton(onClick = onNext, modifier = Modifier.padding(top = 8.dp)) {
-                Text("AHORA NO, LO HAGO DESPUÉS", fontSize = 18.sp, fontWeight = FontWeight.Black, color = Color(0xFF94A3B8))
+        Spacer(Modifier.height(48.dp))
+
+        if (isDefaultHome) {
+            Button(
+                onClick = onNext,
+                modifier = Modifier.fillMaxWidth().height(90.dp),
+                shape = RoundedCornerShape(40.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981))
+            ) {
+                Text("SIGUIENTE PASO", fontSize = 24.sp, fontWeight = FontWeight.Black)
+            }
+        } else {
+            Button(
+                onClick = { askToBeHome() },
+                modifier = Modifier.fillMaxWidth().height(90.dp),
+                shape = RoundedCornerShape(40.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B82F6))
+            ) {
+                Text("SÍ, ESTÁ BIEN", fontSize = 24.sp, fontWeight = FontWeight.Black)
+            }
+            TextButton(onClick = onNext, modifier = Modifier.padding(top = 16.dp)) {
+                Text("AHORA NO", fontSize = 18.sp, fontWeight = FontWeight.Black, color = Color(0xFF94A3B8))
             }
         }
     }
@@ -377,70 +391,6 @@ fun FallDetectionSetupScreen(onNext: () -> Unit, settingsVm: SettingsViewModel) 
             shape = RoundedCornerShape(20.dp)
         ) {
             Text("SIGUIENTE", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-        }
-    }
-}
-
-@Composable
-fun SecuritySetupScreen(onNext: () -> Unit, settingsVm: SettingsViewModel) {
-    var pin by remember { mutableStateOf("") }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "Configurar protección",
-            fontSize = 32.sp,
-            lineHeight = 38.sp,
-            fontWeight = FontWeight.ExtraBold,
-            textAlign = TextAlign.Center
-        )
-        
-        Spacer(Modifier.height(32.dp))
-        
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
-        ) {
-            Column(Modifier.padding(20.dp)) {
-                Text("Clave de 4 dígitos", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                Text("Esto bloquea los ajustes para evitar cambios accidentales.", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                
-                Spacer(Modifier.height(16.dp))
-                
-                OutlinedTextField(
-                    value = pin,
-                    onValueChange = { if (it.length <= 4 && it.all { char -> char.isDigit() }) pin = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("Ej.: 1234") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    visualTransformation = PasswordVisualTransformation(),
-                    shape = RoundedCornerShape(12.dp)
-                )
-            }
-        }
-        
-        Spacer(Modifier.weight(1f))
-        
-        Button(
-            onClick = {
-                if (pin.length == 4) {
-                    settingsVm.setPinCode(pin)
-                    settingsVm.lockSettings()
-                }
-                onNext()
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(70.dp),
-            shape = RoundedCornerShape(20.dp)
-        ) {
-            Text("GUARDAR PROTECCIÓN", fontSize = 20.sp, fontWeight = FontWeight.Bold)
         }
     }
 }
