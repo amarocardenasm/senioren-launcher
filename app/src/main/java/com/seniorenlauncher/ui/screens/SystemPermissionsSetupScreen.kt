@@ -110,7 +110,7 @@ fun SystemPermissionsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) 
         
         Text(
             text = if (isSenior) 
-                "Hay que activar algunos permisos para que sus alarmas y la emergencia funcionen siempre bien. Toque los recuadros rojos." 
+                "Estos permisos hacen que sus alarmas y recordatorios suenen siempre a la hora. Toque cada recuadro rojo: se abrirá un ajuste del teléfono; actívelo y vuelva atrás." 
                 else "Estos ajustes son clave para que todo funcione bien en Samsung y Android 14/15/16.",
             fontSize = if (isSenior) 22.sp else 18.sp,
             textAlign = TextAlign.Center,
@@ -233,11 +233,16 @@ fun SystemPermissionsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) 
         ) {
             Text(
                 text = if (allGranted) (if (isSenior) "LISTO, CONTINUAR" else "SIGUIENTE") 
-                       else (if (isSenior) "ACTIVE LOS PERMISOS" else "CONFIGURE TODO PARA CONTINUAR"),
+                       else "TOQUE LOS RECUADROS ROJOS",
                 fontSize = if (isSenior) 24.sp else 20.sp,
                 fontWeight = FontWeight.Black,
                 textAlign = TextAlign.Center
             )
+        }
+        if (!allGranted) {
+            TextButton(onClick = onNext, modifier = Modifier.padding(top = 8.dp)) {
+                Text("AHORA NO, LO HAGO DESPUÉS", fontSize = 18.sp, fontWeight = FontWeight.Black, color = Color(0xFF94A3B8))
+            }
         }
     }
 }

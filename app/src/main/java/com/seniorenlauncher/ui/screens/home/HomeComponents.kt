@@ -1,14 +1,11 @@
 package com.seniorenlauncher.ui.screens.home
 
-import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.input.pointer.pointerInput
 import kotlinx.coroutines.withTimeoutOrNull
 import android.content.Intent
 import android.content.IntentFilter
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.os.BatteryManager
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -39,147 +36,103 @@ import java.util.*
 fun HomeTopBar(notificationCount: Int, onNotificationsClick: () -> Unit, onEmergencyHold: () -> Unit) {
     val context = LocalContext.current
     var currentTime by remember { mutableStateOf(SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())) }
-    var currentDate by remember { mutableStateOf(SimpleDateFormat("EEEE d MMMM", Locale.getDefault()).format(Date())) }
-    
+    var currentDate by remember { mutableStateOf(SimpleDateFormat("EEEE d 'de' MMMM", Locale.getDefault()).format(Date())) }
     var batteryLevel by remember { mutableIntStateOf(100) }
     var isCharging by remember { mutableStateOf(false) }
-    var isWifiConnected by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         while (true) {
             val now = Date()
             currentTime = SimpleDateFormat("HH:mm", Locale.getDefault()).format(now)
-            currentDate = SimpleDateFormat("EEEE d MMMM", Locale.getDefault()).format(now)
-            
-            val batteryStatus: Intent? = IntentFilter(Intent.ACTION_BATTERY_CHANGED).let { filter ->
-                context.registerReceiver(null, filter)
-            }
+            currentDate = SimpleDateFormat("EEEE d 'de' MMMM", Locale.getDefault()).format(now)
+
+            val batteryStatus: Intent? = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
             batteryLevel = batteryStatus?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
             val status = batteryStatus?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) ?: -1
             isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL
 
-            val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            val network = connectivityManager.activeNetwork
-            val capabilities = connectivityManager.getNetworkCapabilities(network)
-            isWifiConnected = capabilities?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
-
-            kotlinx.coroutines.delay(60000)
+            // Actualiza justo al cambiar el minuto
+            kotlinx.coroutines.delay(60_000L - (System.currentTimeMillis() % 60_000L))
         }
     }
 
-    Surface(
-        color = Color.Transparent,
-        modifier = Modifier.fillMaxWidth()
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 8.dp)
     ) {
-        Column {
-        // Boton de emergencia pequeño y arriba: hay que mantenerlo presionado
-        Box(
-            Modifier
-                .fillMaxWidth()
-                .padding(end = 24.dp, top = 8.dp),
-            contentAlignment = Alignment.CenterEnd
-        ) {
-            EmergencyHoldChip(onActivate = onEmergencyHold)
-        }
+        // Fila chica: bateria y avisos a la izquierda, emergencia a la derecha
         Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Links: Status Capsule (Glass Effect)
-            Surface(
-                shape = RoundedCornerShape(30.dp),
-                color = Color(0xFF1E293B).copy(alpha = 0.6f),
-                modifier = Modifier.height(76.dp),
-                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
-            ) {
-                Row(
-                    Modifier.padding(horizontal = 20.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(14.dp)
-                ) {
-                    Icon(
-                        imageVector = if (isCharging) Icons.Default.BatteryChargingFull else if (batteryLevel < 20) Icons.Default.BatteryAlert else Icons.Default.BatteryFull,
-                        contentDescription = null,
-                        modifier = Modifier.size(28.dp),
-                        tint = if (batteryLevel < 20 && !isCharging) Color(0xFFEF4444) else Color(0xFF10B981)
-                    )
-                    Text(
-                        text = "$batteryLevel%",
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Black,
-                        color = Color.White
-                    )
-                    Box(Modifier.width(1.dp).height(24.dp).background(Color.White.copy(alpha = 0.2f)))
-                    Icon(
-                        imageVector = if (isWifiConnected) Icons.Default.Wifi else Icons.Default.SignalCellularAlt,
-                        contentDescription = null,
-                        modifier = Modifier.size(26.dp),
-                        tint = Color.White.copy(alpha = 0.6f)
-                    )
-                }
+            val lowBattery = batteryLevel in 0..19 && !isCharging
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = if (isCharging) Icons.Default.BatteryChargingFull else if (lowBattery) Icons.Default.BatteryAlert else Icons.Default.BatteryFull,
+                    contentDescription = "Batería",
+                    modifier = Modifier.size(24.dp),
+                    tint = if (lowBattery) Color(0xFFEF4444) else Color(0xFF10B981)
+                )
+                Spacer(Modifier.width(4.dp))
+                Text("$batteryLevel%", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White.copy(alpha = 0.8f))
             }
 
-            // Midden: Elegante Klok (Hyper-Refined)
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    currentTime, 
-                    fontSize = 62.sp, 
-                    fontWeight = FontWeight.W900,
-                    color = Color.White,
-                    letterSpacing = (-2).sp
-                )
-                Text(
-                    currentDate.uppercase(), 
-                    fontSize = 13.sp, 
-                    fontWeight = FontWeight.Black,
-                    color = Color(0xFF6366F1), // Modern Indigo
-                    letterSpacing = 2.5.sp
-                )
-            }
+            Spacer(Modifier.width(16.dp))
 
-            // Rechts: Notification Avatar (Glass Effect)
             Surface(
                 onClick = onNotificationsClick,
-                modifier = Modifier.size(76.dp),
+                modifier = Modifier.size(52.dp),
                 shape = CircleShape,
                 color = Color(0xFF1E293B).copy(alpha = 0.6f),
                 border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
-                        Icons.Default.Notifications, 
+                        Icons.Default.Notifications,
                         contentDescription = "Avisos",
-                        modifier = Modifier.size(34.dp),
-                        tint = if (notificationCount > 0) Color(0xFF6366F1) else Color.White.copy(alpha = 0.4f)
+                        modifier = Modifier.size(28.dp),
+                        tint = if (notificationCount > 0) Color(0xFF818CF8) else Color.White.copy(alpha = 0.5f)
                     )
                     if (notificationCount > 0) {
                         Surface(
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(4.dp)
-                                .size(24.dp),
+                            modifier = Modifier.align(Alignment.TopEnd).size(20.dp),
                             shape = CircleShape,
-                            color = Color(0xFFEF4444),
-                            border = BorderStroke(2.dp, Color(0xFF0F172A))
+                            color = Color(0xFFEF4444)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
-                                Text(
-                                    "$notificationCount",
-                                    color = Color.White,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Black
-                                )
+                                Text("$notificationCount", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Black)
                             }
                         }
                     }
                 }
             }
+
+            Spacer(Modifier.weight(1f))
+
+            // Boton de emergencia pequeño: hay que mantenerlo presionado
+            EmergencyHoldChip(onActivate = onEmergencyHold)
         }
+
+        // La hora es la protagonista
+        Column(
+            Modifier.fillMaxWidth().padding(top = 4.dp, bottom = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                currentTime,
+                fontSize = 84.sp,
+                fontWeight = FontWeight.W900,
+                color = Color.White,
+                letterSpacing = (-2).sp,
+                lineHeight = 88.sp
+            )
+            Text(
+                currentDate.replaceFirstChar { it.uppercase() },
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFFA5B4FC)
+            )
         }
     }
 }

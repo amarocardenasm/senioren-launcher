@@ -41,20 +41,50 @@ object AppLauncher {
         }
     }
 
+    /** Abre la galeria de fotos del telefono (no necesita permisos de fotos). */
+    fun openGallery(context: Context) {
+        val gallery = Intent(Intent.ACTION_MAIN)
+            .addCategory(Intent.CATEGORY_APP_GALLERY)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        try {
+            context.startActivity(gallery)
+            return
+        } catch (e: Exception) {
+            Log.w("AppLauncher", "Sin galeria predeterminada", e)
+        }
+        // Galerias conocidas: Samsung, Google Fotos, Xiaomi, Motorola/AOSP
+        val known = listOf(
+            "com.sec.android.gallery3d",
+            "com.google.android.apps.photos",
+            "com.miui.gallery",
+            "com.android.gallery3d"
+        )
+        for (pkg in known) {
+            val intent = context.packageManager.getLaunchIntentForPackage(pkg) ?: continue
+            context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            return
+        }
+        Toast.makeText(context, "No se encontró la app de galería", Toast.LENGTH_SHORT).show()
+    }
+
     suspend fun getInstalledApps(context: Context, includeIcons: Boolean = false): List<InstalledApp> = withContext(Dispatchers.IO) {
         val pm = context.packageManager
-        val apps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
-        apps.filter { 
-            (pm.getLaunchIntentForPackage(it.packageName) != null) && it.packageName != context.packageName
+        val launcherIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+        // Orden alfabetico en español (ignora tildes y mayusculas)
+        val collator = java.text.Collator.getInstance(java.util.Locale("es", "CL")).apply {
+            strength = java.text.Collator.PRIMARY
         }
-        .map { 
-            InstalledApp(
-                it.loadLabel(pm).toString(), 
-                it.packageName,
-                if (includeIcons) it.loadIcon(pm) else null
-            ) 
-        }
-        .sortedBy { it.name.lowercase() }
+        pm.queryIntentActivities(launcherIntent, 0)
+            .filter { it.activityInfo.packageName != context.packageName }
+            .distinctBy { it.activityInfo.packageName }
+            .map {
+                InstalledApp(
+                    it.loadLabel(pm).toString(),
+                    it.activityInfo.packageName,
+                    if (includeIcons) it.loadIcon(pm) else null
+                )
+            }
+            .sortedWith { a, b -> collator.compare(a.name, b.name) }
     }
 
     fun getAppInfo(context: Context, packageName: String): InstalledApp? {

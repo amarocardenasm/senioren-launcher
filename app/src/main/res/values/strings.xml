@@ -14,9 +14,9 @@
     <string name="privacy_promise_title">Nuestra promesa</string>
     <string name="privacy_promise_desc">Senior Launcher está diseñado con la privacidad como base. Sus datos se quedan en este teléfono.</string>
     <string name="privacy_processing_title">Uso de sus datos</string>
-    <string name="privacy_processing_desc">• Sin nube: sus datos se quedan en este teléfono.\n• Sin seguimiento: no hay publicidad ni análisis.\n• Los llamados solo se hacen cuando usted lo decide.</string>
+    <string name="privacy_processing_desc">• Sin nube: sus datos se guardan solo en este teléfono.\n• Sin seguimiento: no hay publicidad ni análisis.\n• La app solo llama cuando usted lo decide.</string>
     <string name="privacy_rights_title">Sus derechos</string>
-    <string name="privacy_rights_desc">Usted tiene el control total. Al desinstalar la app, todos sus datos se borran del teléfono.</string>
+    <string name="privacy_rights_desc">Usted decide: puede cambiar los permisos cuando quiera desde los ajustes del teléfono.</string>
     <string name="privacy_accept">ACEPTO</string>
     <string name="privacy_version_label">Versión 0.8.8 - Senior Launcher</string>
 </resources>

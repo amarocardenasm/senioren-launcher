@@ -234,6 +234,11 @@ fun SettingsScreenContent(
                     onNavigate("sos_settings") 
                 }
                 HorizontalDivider(Modifier.padding(vertical = 8.dp), thickness = 0.5.dp)
+                SettRow("🛡️ Internet más seguro (filtro de estafas)") {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onNavigate("safe_internet")
+                }
+                HorizontalDivider(Modifier.padding(vertical = 8.dp), thickness = 0.5.dp)
                 SettToggle("⚠️ Detección de caídas", settings.fallDetectionEnabled) { 
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     onToggleFallDetection() 

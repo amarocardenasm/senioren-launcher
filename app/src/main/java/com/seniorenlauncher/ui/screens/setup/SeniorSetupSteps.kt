@@ -2,6 +2,7 @@ package com.seniorenlauncher.ui.screens.setup
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -150,7 +151,7 @@ fun SeniorEmergencyStep(onNext: () -> Unit) {
     var phone by remember { mutableStateOf("") }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
+        modifier = Modifier.fillMaxSize().padding(24.dp).verticalScroll(androidx.compose.foundation.rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text("🆘", fontSize = 60.sp)
@@ -192,7 +193,10 @@ fun SeniorEmergencyStep(onNext: () -> Unit) {
             Text("GUARDAR CONTACTO", fontSize = 20.sp, fontWeight = FontWeight.Bold)
         }
         
-        Spacer(Modifier.height(24.dp))
-        Text("Después la app le pedirá permiso para llamar a este número.", fontSize = 16.sp, textAlign = TextAlign.Center, color = Color.Gray)
+        TextButton(onClick = onNext, modifier = Modifier.padding(top = 8.dp)) {
+            Text("AHORA NO, LO HAGO DESPUÉS", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
+        }
+        Spacer(Modifier.height(16.dp))
+        Text("Este contacto aparecerá en la pantalla de Emergencias. Puede cambiarlo después en Ajustes.", fontSize = 16.sp, textAlign = TextAlign.Center, color = Color.Gray)
     }
 }

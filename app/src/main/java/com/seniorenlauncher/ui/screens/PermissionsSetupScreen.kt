@@ -16,6 +16,8 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
@@ -42,7 +44,8 @@ data class PermissionCategory(
     val description: String,
     val privacyNote: String,
     val icon: ImageVector,
-    val permissions: List<String>
+    val permissions: List<String>,
+    val ifDenied: String = ""
 )
 
 @Composable
@@ -60,7 +63,8 @@ fun PermissionsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
             else "Necesario para conocer su ubicación y mostrar el clima.", 
             "Privacidad: su ubicación no se comparte con nadie.",
             Icons.Default.LocationOn, 
-            locationPermissions
+            locationPermissions,
+            "Si dice que no: el clima le pedirá que elija su ciudad a mano."
         ))
 
         list.add(PermissionCategory(
@@ -69,7 +73,26 @@ fun PermissionsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
             else "Para llamar directamente desde la pantalla de inicio.", 
             "Privacidad: la app solo llama cuando usted toca un contacto.",
             Icons.Default.Phone, 
-            listOf(Manifest.permission.CALL_PHONE)
+            listOf(Manifest.permission.CALL_PHONE),
+            "Si dice que no: antes de cada llamada se abrirá el teclado del teléfono y tendrá que tocar llamar."
+        ))
+
+        list.add(PermissionCategory(
+            "CONTACTOS",
+            "Para elegir a sus familiares y amigos desde la libreta del teléfono.",
+            "Privacidad: sus contactos no salen de este teléfono.",
+            Icons.Default.Contacts,
+            listOf(Manifest.permission.READ_CONTACTS),
+            "Si dice que no: tendrá que escribir a mano cada nombre y número."
+        ))
+
+        list.add(PermissionCategory(
+            "AGENDA",
+            "Para ver y anotar sus citas (doctor, cumpleaños) y avisarle antes.",
+            "Privacidad: las citas quedan en su propio calendario.",
+            Icons.Default.CalendarMonth,
+            listOf(Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR),
+            "Si dice que no: la agenda no podrá mostrar ni guardar citas."
         ))
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -83,7 +106,8 @@ fun PermissionsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
                 "Para que el teléfono cuente sus pasos diarios.", 
                 "Privacidad: estos datos quedan en su propio teléfono.",
                 Icons.AutoMirrored.Filled.DirectionsWalk, 
-                healthPermissions
+                healthPermissions,
+                "Si dice que no: el contador de pasos y la detección de caídas no funcionarán."
             ))
         }
 
@@ -93,7 +117,8 @@ fun PermissionsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
             else "Necesario para la lupa y la linterna.", 
             "Privacidad: no se guarda ninguna foto sin que usted lo pida.",
             Icons.Default.CameraAlt, 
-            listOf(Manifest.permission.CAMERA)
+            listOf(Manifest.permission.CAMERA),
+            "Si dice que no: la lupa y la linterna no funcionarán."
         ))
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -103,7 +128,8 @@ fun PermissionsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
                 else "Necesario para las alarmas de medicamentos.", 
                 "Privacidad: sin publicidad, solo sus avisos importantes.",
                 Icons.Default.Notifications, 
-                listOf(Manifest.permission.POST_NOTIFICATIONS)
+                listOf(Manifest.permission.POST_NOTIFICATIONS),
+                "Si dice que no: no recibirá avisos de sus medicamentos ni de sus citas."
             ))
         }
 
@@ -162,7 +188,7 @@ fun PermissionsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
                 }
             }
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             AnimatedContent(
                 targetState = currentCategory,
@@ -174,12 +200,12 @@ fun PermissionsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
             ) { category ->
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())
                 ) {
                     // Luminous Icon
                     Box(
                         contentAlignment = Alignment.Center,
-                        modifier = Modifier.size(160.dp)
+                        modifier = Modifier.size(130.dp)
                     ) {
                         Surface(
                             modifier = Modifier.size(120.dp),
@@ -220,7 +246,18 @@ fun PermissionsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
                         color = Color.White
                     )
 
-                    Spacer(modifier = Modifier.height(40.dp))
+                    if (category.ifDenied.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = category.ifDenied,
+                            fontSize = 18.sp,
+                            textAlign = TextAlign.Center,
+                            lineHeight = 26.sp,
+                            color = Color(0xFFCBD5E1)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(32.dp))
 
                     // Bento-style Privacy Card
                     Card(

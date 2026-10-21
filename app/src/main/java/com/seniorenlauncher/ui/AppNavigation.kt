@@ -42,7 +42,6 @@ fun AppNavigation(
             ) 
         }
         composable("camera") { /* Handled in HomeScreen via AppLauncher */ }
-        composable("photos") { PhotosScreen(onBack = { navController.popBackStack() }) }
         composable("alarm") { AlarmScreen(onBack = { navController.popBackStack() }) }
         composable("calendar") { CalendarScreen(onBack = { navController.popBackStack() }) }
         composable("meds") { MedicationScreen(onBack = { navController.popBackStack() }) }
@@ -59,6 +58,11 @@ fun AppNavigation(
             )
         }
         composable("sos_settings") { SosContactSettingsScreen(onBack = { navController.popBackStack() }) }
+        composable("safe_internet") {
+            androidx.compose.material3.Surface(color = androidx.compose.material3.MaterialTheme.colorScheme.background) {
+                com.seniorenlauncher.ui.screens.setup.SafeInternetStep(onNext = { navController.popBackStack() })
+            }
+        }
         composable("privacy") { PrivacyScreen(onBack = { navController.popBackStack() }) }
         composable("all_apps") { AllAppsScreen(onBack = { navController.popBackStack() }) }
         composable("settings") { 

@@ -66,7 +66,7 @@ fun DefaultAppsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = if (isSenior) "Dejar el teléfono seguro" else "Apps predeterminadas",
+            text = if (isSenior) "Su pantalla de inicio" else "Apps predeterminadas",
             fontSize = if (isSenior) 36.sp else 32.sp,
             fontWeight = FontWeight.ExtraBold,
             textAlign = TextAlign.Center,
@@ -77,7 +77,7 @@ fun DefaultAppsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
         
         Text(
             text = if (isSenior) 
-                "Dejaremos Senior Launcher como su pantalla de inicio. Toque los recuadros rojos."
+                "Así, cada vez que toque el botón de inicio verá estos botones grandes y simples. Toque el recuadro rojo y elija Senior Launcher."
                 else "Establezca el launcher como app de inicio predeterminada para que funcione de forma estable.",
             fontSize = if (isSenior) 22.sp else 18.sp, 
             textAlign = TextAlign.Center,
@@ -116,11 +116,16 @@ fun DefaultAppsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
         ) {
             Text(
                 text = if (allDone) (if (isSenior) "LISTO, CONTINUAR" else "SIGUIENTE") 
-                       else (if (isSenior) "CONFIGURE LOS PERMISOS" else "CONFIGURE TODO"), 
+                       else "TOQUE EL RECUADRO ROJO", 
                 fontSize = if (isSenior) 24.sp else 22.sp, 
                 fontWeight = FontWeight.Black,
                 textAlign = TextAlign.Center
             )
+        }
+        if (!allDone) {
+            TextButton(onClick = onNext, modifier = Modifier.padding(top = 8.dp)) {
+                Text("AHORA NO, LO HAGO DESPUÉS", fontSize = 18.sp, fontWeight = FontWeight.Black, color = Color(0xFF94A3B8))
+            }
         }
     }
 }

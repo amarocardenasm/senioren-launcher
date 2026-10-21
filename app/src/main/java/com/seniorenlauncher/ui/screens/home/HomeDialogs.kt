@@ -197,9 +197,10 @@ fun AppPickerDialog(
     onRemove: () -> Unit
 ) {
     val context = LocalContext.current
-    val installedApps by produceState<List<InstalledApp>>(initialValue = emptyList(), context) {
+    val loadedApps by produceState<List<InstalledApp>?>(initialValue = null, context) {
         value = AppLauncher.getInstalledApps(context, includeIcons = true)
     }
+    val installedApps = loadedApps ?: emptyList()
     var searchQuery by remember { mutableStateOf("") }
     val selectedPackages = remember { mutableStateListOf<String>() }
 
@@ -235,6 +236,13 @@ fun AppPickerDialog(
                     }
                 }
                 
+                Text(
+                    "Toque las apps que quiere ver en su pantalla de inicio.",
+                    fontSize = 18.sp,
+                    color = Color(0xFFCBD5E1),
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+
                 Spacer(Modifier.height(16.dp))
 
                 OutlinedTextField(
@@ -256,7 +264,11 @@ fun AppPickerDialog(
 
                 Spacer(Modifier.height(16.dp))
                 
-                LazyColumn(Modifier.weight(1f)) {
+                if (loadedApps == null) {
+                    Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = Color.White)
+                    }
+                } else LazyColumn(Modifier.weight(1f)) {
                     items(filteredApps) { app ->
                         val isSelected = selectedPackages.contains(app.packageName)
                         val interactionSource = remember { MutableInteractionSource() }

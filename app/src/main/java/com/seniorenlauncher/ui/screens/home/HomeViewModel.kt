@@ -56,7 +56,7 @@ class HomeViewModel : ViewModel() {
                 )
             }
 
-        val visibleStandardApps = ALL_APPS.filter { it.id in settings.visibleApps || it.id == "settings" || it.id == "wifi" || it.id == "bluetooth" }.map { 
+        val visibleStandardApps = ALL_APPS.filter { it.id in settings.visibleApps || it.id == "all_apps" || it.id == "settings" }.map { 
             HomeApp(
                 id = it.id,
                 name = it.name,

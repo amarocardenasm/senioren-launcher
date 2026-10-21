@@ -15,7 +15,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.seniorenlauncher.LauncherApp
 import com.seniorenlauncher.data.model.*
@@ -46,6 +48,7 @@ fun HomeScreen(onNavigate: (String) -> Unit, settingsVm: SettingsViewModel) {
     }
 
     var showAppPickerFor by remember { mutableStateOf<String?>(null) }
+    var appToRemove by remember { mutableStateOf<HomeApp?>(null) }
     var showPinDialogForSettings by remember { mutableStateOf(false) }
     var showWifiDialog by remember { mutableStateOf(false) }
     var showBluetoothDialog by remember { mutableStateOf(false) }
@@ -58,7 +61,7 @@ fun HomeScreen(onNavigate: (String) -> Unit, settingsVm: SettingsViewModel) {
         pendingMedsCount = uiState.pendingMedsCount,
         onNavigate = onNavigate,
         onAddApp = { showAppPickerFor = "new" },
-        onAppLongClick = { id -> showAppPickerFor = id },
+        onAppLongClick = { id -> appToRemove = uiState.allVisibleApps.firstOrNull { it.id == id } },
         onSettingsClick = { showPinDialogForSettings = true },
         onWifiClick = { showWifiDialog = true },
         onBluetoothClick = { showBluetoothDialog = true },
@@ -86,6 +89,23 @@ fun HomeScreen(onNavigate: (String) -> Unit, settingsVm: SettingsViewModel) {
         )
     }
     
+    appToRemove?.let { app ->
+        AlertDialog(
+            onDismissRequest = { appToRemove = null },
+            title = { Text("¿Quitar ${app.name} de la pantalla de inicio?", fontSize = 22.sp, fontWeight = FontWeight.Bold) },
+            text = { Text("La app no se borra del teléfono. Puede volver a ponerla con el botón Agregar.", fontSize = 18.sp) },
+            confirmButton = {
+                Button(onClick = {
+                    settingsVm.updateVisibleApps(uiState.settings.visibleApps - app.id)
+                    appToRemove = null
+                }) { Text("QUITAR", fontSize = 18.sp, fontWeight = FontWeight.Bold) }
+            },
+            dismissButton = {
+                TextButton(onClick = { appToRemove = null }) { Text("CANCELAR", fontSize = 18.sp, fontWeight = FontWeight.Bold) }
+            }
+        )
+    }
+
     if (showPinDialogForSettings) {
         PinDialog(
             correctPin = uiState.settings.pinCode ?: "1234",
@@ -201,6 +221,7 @@ fun HomeScreenContent(
                             onClick = {
                                 when {
                                     app.id == "camera" -> AppLauncher.openSystemCamera(context)
+                                    app.id == "photos" -> AppLauncher.openGallery(context)
                                     app.id == "wifi" -> onWifiClick()
                                     app.id == "bluetooth" -> onBluetoothClick()
                                     app.id == "sms" -> AppLauncher.openMessages(context)
@@ -213,7 +234,7 @@ fun HomeScreenContent(
                                 }
                             },
                             onLongClick = {
-                                if (app.id != "settings" && app.id != "wifi" && app.id != "bluetooth") {
+                                if (app.id != "settings" && app.id != "all_apps") {
                                     onAppLongClick(app.id)
                                 }
                             }

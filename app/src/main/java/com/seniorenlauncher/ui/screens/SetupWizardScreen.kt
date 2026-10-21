@@ -65,12 +65,14 @@ fun SetupWizardScreen(
                 1 -> PermissionsSetupScreen(onNext = { caregiverStep = 2 }, isSenior = false)
                 2 -> SystemPermissionsSetupScreen(onNext = { caregiverStep = 3 }, isSenior = false)
                 3 -> DefaultAppsSetupScreen(onNext = { caregiverStep = 4 }, isSenior = false)
-                4 -> SosSetupScreen(onNext = { caregiverStep = 5 }, settingsVm = settingsVm)
-                5 -> FallDetectionSetupScreen(onNext = { caregiverStep = 6 }, settingsVm = settingsVm)
-                6 -> SecuritySetupScreen(onNext = { caregiverStep = 7 }, settingsVm = settingsVm)
-                7 -> HandoverScreen(onNext = { 
+                4 -> SafeInternetStep(onNext = { caregiverStep = 5 })
+                5 -> SosSetupScreen(onNext = { caregiverStep = 6 }, settingsVm = settingsVm)
+                6 -> FallDetectionSetupScreen(onNext = { caregiverStep = 7 }, settingsVm = settingsVm)
+                7 -> SecuritySetupScreen(onNext = { caregiverStep = 8 }, settingsVm = settingsVm)
+                8 -> HandoverScreen(onNext = {
+                    // El familiar ya hizo la parte tecnica: la persona solo elige letras y colores
                     flow = WizardSetupFlow.SENIOR
-                    seniorStep = 1
+                    seniorStep = SENIOR_STEP_READING
                 })
                 else -> {}
             }
@@ -78,19 +80,26 @@ fun SetupWizardScreen(
         WizardSetupFlow.SENIOR -> {
             val contactDao = remember { LauncherApp.instance.database.contactDao() }
             val sosCount by contactDao.getSosContacts().collectAsState(initial = emptyList())
+            val technicalDone = caregiverStep > 1
 
+            // Instalacion por cuenta propia: primero lo visual (para leer comodo),
+            // despues permisos explicados uno por uno, pantalla de inicio e internet seguro.
             when (seniorStep) {
-                1 -> SeniorWelcomeStep(onNext = { seniorStep = 5 })
-                5 -> SeniorReadingStep(onNext = { seniorStep = 6 }, settingsVm = settingsVm)
-                6 -> SeniorColorsStep(onNext = { seniorStep = 7 }, settingsVm = settingsVm)
-                7 -> {
+                1 -> SeniorWelcomeStep(onNext = { seniorStep = SENIOR_STEP_READING })
+                SENIOR_STEP_READING -> SeniorReadingStep(onNext = { seniorStep = 3 }, settingsVm = settingsVm)
+                3 -> SeniorColorsStep(onNext = { seniorStep = if (technicalDone) 8 else 4 }, settingsVm = settingsVm)
+                4 -> PermissionsSetupScreen(onNext = { seniorStep = 5 }, isSenior = true)
+                5 -> SystemPermissionsSetupScreen(onNext = { seniorStep = 6 }, isSenior = true)
+                6 -> DefaultAppsSetupScreen(onNext = { seniorStep = 7 }, isSenior = true)
+                7 -> SafeInternetStep(onNext = { seniorStep = 8 })
+                8 -> {
                     if (sosCount.isNotEmpty()) {
                         LaunchedEffect(Unit) {
                             settingsVm.completeSetup()
                             onFinished()
                         }
                     } else {
-                        SeniorEmergencyStep(onNext = { 
+                        SeniorEmergencyStep(onNext = {
                             settingsVm.completeSetup()
                             onFinished()
                         })
@@ -101,6 +110,8 @@ fun SetupWizardScreen(
         }
     }
 }
+
+private const val SENIOR_STEP_READING = 2
 
 @Composable
 fun PrivacyConsentScreen(onAccepted: () -> Unit) {
@@ -214,47 +225,39 @@ fun FlowSelectionScreen(onFlowSelected: (WizardSetupFlow) -> Unit) {
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "BIENVENIDO.\n¿QUIÉN CONFIGURA ESTE TELÉFONO?",
-            fontSize = 32.sp,
+            text = "BIENVENIDO",
+            fontSize = 36.sp,
             lineHeight = 42.sp,
             fontWeight = FontWeight.Black,
             textAlign = TextAlign.Center,
-            color = Color.White,
-            modifier = Modifier.padding(bottom = 32.dp)
+            color = Color.White
         )
-        
-        Card(
-            modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B)), // Slate 800
-            shape = RoundedCornerShape(40.dp),
-            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
-        ) {
-            Text(
-                "La configuración tiene dos partes: los ajustes técnicos y las preferencias visuales de quien usará el teléfono.",
-                modifier = Modifier.padding(24.dp),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                color = Color.White
-            )
-        }
+        Text(
+            text = "¿Quién está configurando este teléfono?",
+            fontSize = 24.sp,
+            lineHeight = 32.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            color = Color(0xFFCBD5E1),
+            modifier = Modifier.padding(top = 8.dp, bottom = 32.dp)
+        )
 
         SetupOptionCard(
-            title = "SOY FAMILIAR O CUIDADOR",
-            description = "Configuro el teléfono por la persona (recomendado).",
-            icon = Icons.Default.VolunteerActivism,
-            color = Color(0xFF3B82F6),
-            onClick = { onFlowSelected(WizardSetupFlow.CAREGIVER) }
+            title = "YO LO CONFIGURO",
+            description = "Voy a usar este teléfono y lo configuro yo. Le explicaremos cada paso.",
+            icon = Icons.Default.Person,
+            color = Color(0xFF10B981),
+            onClick = { onFlowSelected(WizardSetupFlow.SENIOR) }
         )
 
         Spacer(Modifier.height(24.dp))
 
         SetupOptionCard(
-            title = "YO USARÉ EL TELÉFONO",
-            description = "Voy a usar este teléfono directamente.",
-            icon = Icons.Default.Person,
-            color = Color(0xFF10B981),
-            onClick = { onFlowSelected(WizardSetupFlow.SENIOR) }
+            title = "UN FAMILIAR O CUIDADOR",
+            description = "Estoy dejando listo el teléfono de otra persona.",
+            icon = Icons.Default.VolunteerActivism,
+            color = Color(0xFF3B82F6),
+            onClick = { onFlowSelected(WizardSetupFlow.CAREGIVER) }
         )
     }
 }
