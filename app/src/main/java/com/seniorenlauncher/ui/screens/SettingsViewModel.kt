@@ -151,7 +151,7 @@ class SettingsViewModel : ViewModel() {
         viewModelScope.launch { repository.setPrivacyAccepted(true) }
     }
 
-    fun verifyPin(pin: String): Boolean = pin == (settings.value.pinCode ?: "1234")
+    fun verifyPin(pin: String): Boolean = settings.value.pinCode.isNullOrBlank() || pin == settings.value.pinCode
 
     fun setUserPhoneNumber(number: String?) {
         viewModelScope.launch { repository.setUserPhoneNumber(number) }

@@ -1,5 +1,7 @@
 package com.seniorenlauncher.ui.screens.home
 
+import com.seniorenlauncher.util.DefaultApps
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.seniorenlauncher.LauncherApp
@@ -18,6 +20,8 @@ data class HomeState(
     val weatherData: WeatherData? = null,
     val pendingMedsCount: Int = 0
 )
+
+private val REAL_APP_IDS = setOf("photos", "browser", "camera", "sms")
 
 class HomeViewModel : ViewModel() {
     private val repository = LauncherApp.instance.settingsRepository
@@ -52,11 +56,20 @@ class HomeViewModel : ViewModel() {
                     emoji = null,
                     icon = info?.icon,
                     vectorIcon = null,
-                    color = Color(0xFF718096)
+                    color = info?.icon?.let { DefaultApps.mainColor(pkg, it) } ?: Color(0xFF475569)
                 )
             }
 
         val visibleStandardApps = ALL_APPS.filter { it.id in settings.visibleApps || it.id == "all_apps" || it.id == "settings" }.map { 
+            // Fotos, Internet, Camara y Mensajes muestran el icono real de la app del telefono
+            val realPkg = if (it.id in REAL_APP_IDS) DefaultApps.packageFor(context, it.id) else null
+            val realIcon = realPkg?.let { pkg -> DefaultApps.icon(context, pkg) }
+            if (realIcon != null) return@map HomeApp(
+                id = it.id,
+                name = it.name,
+                icon = realIcon,
+                color = DefaultApps.mainColor(realPkg!!, realIcon) ?: Color(it.color)
+            )
             HomeApp(
                 id = it.id,
                 name = it.name,

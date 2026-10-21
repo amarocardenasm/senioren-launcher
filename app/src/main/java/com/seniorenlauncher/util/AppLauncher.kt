@@ -67,6 +67,17 @@ object AppLauncher {
         Toast.makeText(context, "No se encontró la app de galería", Toast.LENGTH_SHORT).show()
     }
 
+    fun openBrowser(context: Context) {
+        try {
+            context.startActivity(
+                Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://www.google.cl"))
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            )
+        } catch (e: Exception) {
+            Toast.makeText(context, "No se encontró un navegador", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     suspend fun getInstalledApps(context: Context, includeIcons: Boolean = false): List<InstalledApp> = withContext(Dispatchers.IO) {
         val pm = context.packageManager
         val launcherIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)

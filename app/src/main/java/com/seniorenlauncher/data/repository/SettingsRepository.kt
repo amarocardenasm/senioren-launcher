@@ -54,7 +54,7 @@ class SettingsRepository(private val context: Context) {
             batteryAlertEnabled = prefs[BATTERY_ALERT] ?: true,
             chargingReminderEnabled = prefs[CHARGING_REMINDER] ?: true,
             scamProtectionEnabled = prefs[SCAM_PROTECTION] ?: false,
-            pinCode = prefs[PIN_CODE] ?: "1234",
+            pinCode = prefs[PIN_CODE]?.takeIf { it.isNotBlank() },
             settingsLocked = prefs[SETTINGS_LOCKED] ?: false,
             visibleApps = prefs[VISIBLE_APPS]?.split(",")?.filter { it.isNotEmpty() }?.toSet() ?: AppSettings().visibleApps,
             appMappings = prefs[APP_MAPPINGS]?.let { jsonStr ->
@@ -85,7 +85,8 @@ class SettingsRepository(private val context: Context) {
             prefs[BATTERY_ALERT] = updated.batteryAlertEnabled
             prefs[CHARGING_REMINDER] = updated.chargingReminderEnabled
             prefs[SCAM_PROTECTION] = updated.scamProtectionEnabled
-            prefs[PIN_CODE] = updated.pinCode ?: "1234"
+            val pin = updated.pinCode
+            if (pin.isNullOrBlank()) prefs.remove(PIN_CODE) else prefs[PIN_CODE] = pin
             prefs[SETTINGS_LOCKED] = updated.settingsLocked
             prefs[VISIBLE_APPS] = updated.visibleApps.joinToString(",")
             prefs[HAS_COMPLETED_SETUP] = updated.hasCompletedSetup
