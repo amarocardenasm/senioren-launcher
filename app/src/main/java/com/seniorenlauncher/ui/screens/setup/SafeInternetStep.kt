@@ -192,8 +192,18 @@ private fun copyToClipboard(context: Context, text: String) {
 }
 
 private fun openNetworkSettings(context: Context) {
+    // En Android "puro" (Pixel, Motorola y otros) estos extras hacen que la
+    // opcion "DNS privado" aparezca resaltada/parpadeando al abrir los ajustes.
+    // Samsung usa su propio menu y los ignora: ahi sirven las instrucciones.
+    val highlightKey = "private_dns_settings"
+    val wireless = Intent(Settings.ACTION_WIRELESS_SETTINGS).apply {
+        putExtra(":settings:fragment_args_key", highlightKey)
+        putExtra(":settings:show_fragment_args", android.os.Bundle().apply {
+            putString(":settings:fragment_args_key", highlightKey)
+        })
+    }
     val intents = listOf(
-        Intent(Settings.ACTION_WIRELESS_SETTINGS),
+        wireless,
         Intent(Settings.ACTION_SETTINGS)
     )
     for (intent in intents) {

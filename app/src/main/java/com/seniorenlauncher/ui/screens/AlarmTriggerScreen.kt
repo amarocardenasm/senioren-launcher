@@ -72,18 +72,6 @@ fun AlarmTriggerScreen(
     val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
     val scope = rememberCoroutineScope()
     
-    var canDrawOverlays by remember { mutableStateOf(Settings.canDrawOverlays(context)) }
-    
-    val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(lifecycleOwner) {
-        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
-            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
-                canDrawOverlays = Settings.canDrawOverlays(context)
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
-    }
 
     val isMedication = label.startsWith("Medicamento:")
     val isFindPhone = label.equals("BUSCAR MI TELÉFONO", ignoreCase = true)
@@ -286,6 +274,7 @@ private fun handleSnooze(context: Context, label: String, alarmId: Long, onDismi
     val snoozeTime = System.currentTimeMillis() + (15 * 60 * 1000L)
     val intent = Intent(context, AlarmReceiver::class.java).apply { putExtra("ALARM_ID", alarmId); putExtra("ALARM_LABEL", "$label (Posponer)"); action = "com.seniorenlauncher.ALARM_SNOOZE_$alarmId" }
     val pi = PendingIntent.getBroadcast(context, (alarmId + 9999).toInt(), intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-    try { alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, snoozeTime, pi); Toast.makeText(context, "¡Hasta en 15 minutos!", Toast.LENGTH_LONG).show() } catch (e: Exception) {}
+    try { alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, snoozeTime, pi) } catch (e: SecurityException) { alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, snoozeTime, pi) }
+    Toast.makeText(context, "Le recordaremos en 15 minutos", Toast.LENGTH_LONG).show()
     onDismiss()
 }

@@ -3,7 +3,7 @@ import androidx.room.*
 import com.seniorenlauncher.data.model.*
 import kotlinx.coroutines.flow.Flow
 
-@Database(entities = [QuickContact::class, Medication::class, MedicationLog::class, Note::class, CalendarEvent::class, EmergencyInfo::class, AlarmEntry::class, WeatherLocation::class, BlockedNumber::class], version = 10, exportSchema = false)
+@Database(entities = [QuickContact::class, Medication::class, MedicationLog::class, Note::class, CalendarEvent::class, EmergencyInfo::class, AlarmEntry::class], version = 11, exportSchema = false)
 abstract class LauncherDatabase : RoomDatabase() {
     abstract fun contactDao(): ContactDao
     abstract fun medicationDao(): MedicationDao
@@ -11,8 +11,6 @@ abstract class LauncherDatabase : RoomDatabase() {
     abstract fun calendarDao(): CalendarDao
     abstract fun emergencyDao(): EmergencyDao
     abstract fun alarmDao(): AlarmDao
-    abstract fun weatherDao(): WeatherDao
-    abstract fun blockedDao(): BlockedDao
 }
 
 @Dao interface ContactDao {
@@ -24,12 +22,6 @@ abstract class LauncherDatabase : RoomDatabase() {
     @Delete suspend fun delete(c: QuickContact)
 }
 
-@Dao interface BlockedDao {
-    @Query("SELECT * FROM blocked_numbers") fun getAll(): Flow<List<BlockedNumber>>
-    @Query("SELECT * FROM blocked_numbers") suspend fun getAllSync(): List<BlockedNumber>
-    @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun insert(b: BlockedNumber)
-    @Delete suspend fun delete(b: BlockedNumber)
-}
 
 @Dao interface MedicationDao {
     @Query("SELECT * FROM medications WHERE active = 1") fun getActive(): Flow<List<Medication>>
@@ -67,9 +59,4 @@ abstract class LauncherDatabase : RoomDatabase() {
     @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun insert(a: AlarmEntry): Long
     @Update suspend fun update(a: AlarmEntry)
     @Delete suspend fun delete(a: AlarmEntry)
-}
-@Dao interface WeatherDao {
-    @Query("SELECT * FROM weather_locations") fun getAll(): Flow<List<WeatherLocation>>
-    @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun insert(l: WeatherLocation)
-    @Delete suspend fun delete(l: WeatherLocation)
 }

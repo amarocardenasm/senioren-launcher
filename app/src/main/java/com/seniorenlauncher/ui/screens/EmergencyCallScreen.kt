@@ -90,6 +90,20 @@ fun EmergencyCallScreen(onBack: () -> Unit, onNavigate: (String) -> Unit) {
                 Spacer(Modifier.height(14.dp))
             }
 
+            // Antes estaba en los ajustes del launcher; ahora se cambia desde aqui mismo
+            TextButton(
+                onClick = { onNavigate("sos_settings") },
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                Text(
+                    if (firstContact == null) "➕ Elegir mi contacto de emergencia" else "✏️ Cambiar mi contacto de emergencia",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
+            Spacer(Modifier.height(14.dp))
+
             EmergencyCard(
                 emoji = "🏥",
                 title = "Mi ficha médica",

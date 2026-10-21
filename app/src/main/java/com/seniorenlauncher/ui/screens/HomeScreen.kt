@@ -1,94 +1,168 @@
 package com.seniorenlauncher.ui.screens
 
-import android.content.Intent
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.seniorenlauncher.LauncherApp
-import com.seniorenlauncher.data.model.*
 import com.seniorenlauncher.service.NotificationListener
-import com.seniorenlauncher.ui.components.*
+import com.seniorenlauncher.ui.components.BigButton
 import com.seniorenlauncher.ui.screens.home.*
-import com.seniorenlauncher.ui.theme.SeniorenLauncherTheme
 import com.seniorenlauncher.util.AppLauncher
-import kotlin.math.ceil
-import kotlin.math.max
+import com.seniorenlauncher.util.DefaultApps
+import com.seniorenlauncher.util.Torch
 
-@OptIn(ExperimentalFoundationApi::class)
+/** Siempre 3 columnas x 3 filas por pagina: igual en todos los telefonos. */
+private const val COLUMNS = 3
+private const val ROWS = 3
+private const val PER_PAGE = COLUMNS * ROWS
+private const val ADD_ID = "__add__"
+
+/** Botones que abren otra app (muestran "Abriendo…" mientras carga). */
+private val OPENS_OTHER_APP = setOf("sms", "camera", "photos", "browser", "email", "settings", "weather", "wifi", "bluetooth")
+
 @Composable
 fun HomeScreen(onNavigate: (String) -> Unit, settingsVm: SettingsViewModel) {
     val context = LocalContext.current
     val homeVm: HomeViewModel = viewModel()
     val uiState by homeVm.state.collectAsState()
-    
     val activeNotifications by NotificationListener.activeNotificationsFlow.collectAsState()
     val badgeCounts by NotificationListener.notifications.collectAsState()
-    
-    val weatherVm: WeatherViewModel = viewModel()
-    val weatherData by weatherVm.currentWeather.collectAsState()
-    
-    // Sync weather data to homeViewModel
-    LaunchedEffect(weatherData) {
-        homeVm.setWeatherData(weatherData)
+
+    LaunchedEffect(Unit) { Torch.init(context) }
+    val torchOn by Torch.isOn.collectAsState()
+
+    var showAppPicker by remember { mutableStateOf(false) }
+    var appToRemove by remember { mutableStateOf<HomeApp?>(null) }
+
+    val apps = uiState.allVisibleApps
+    val slots = apps + HomeApp(id = ADD_ID, name = "Agregar", emoji = "➕", color = Color(0xFF334155))
+    val pageCount = (slots.size + PER_PAGE - 1) / PER_PAGE
+    val pagerState = rememberPagerState(pageCount = { pageCount })
+
+    fun open(app: HomeApp) {
+        when {
+            app.id == ADD_ID -> showAppPicker = true
+            app.id == "phone" -> onNavigate("phone")
+            app.id == "sms" -> AppLauncher.openMessages(context)
+            app.id == "camera" -> if (!DefaultApps.open(context, "camera")) AppLauncher.openSystemCamera(context)
+            app.id == "photos" -> if (!DefaultApps.open(context, "photos")) AppLauncher.openGallery(context)
+            app.id == "browser" -> if (!DefaultApps.open(context, "browser")) AppLauncher.openBrowser(context)
+            app.id == "email" -> DefaultApps.open(context, "email")
+            app.id == "settings" -> DefaultApps.open(context, "settings")
+            app.id == "weather" -> AppLauncher.openWeather(context)
+            app.id == "wifi" -> AppLauncher.openWifiSettings(context)
+            app.id == "bluetooth" -> AppLauncher.openBluetoothSettings(context)
+            app.id == "flashlight" -> Torch.toggle(context)
+            app.id.startsWith("mapped_") -> uiState.settings.appMappings[app.id]?.let { AppLauncher.launchApp(context, it) }
+            else -> onNavigate(app.id)
+        }
     }
 
-    var showAppPickerFor by remember { mutableStateOf<String?>(null) }
-    var appToRemove by remember { mutableStateOf<HomeApp?>(null) }
-    var showPinDialogForSettings by remember { mutableStateOf(false) }
-    var showWifiDialog by remember { mutableStateOf(false) }
-    var showBluetoothDialog by remember { mutableStateOf(false) }
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .statusBarsPadding()
+    ) {
+        HomeTopBar(
+            notificationCount = activeNotifications.size,
+            onNotificationsClick = { onNavigate("notifications") },
+            onEmergencyHold = { onNavigate("emergency_numbers") }
+        )
 
-    HomeScreenContent(
-        settings = uiState.settings,
-        allVisibleApps = uiState.allVisibleApps,
-        activeNotificationsCount = activeNotifications.size,
-        badgeCounts = badgeCounts,
-        pendingMedsCount = uiState.pendingMedsCount,
-        onNavigate = onNavigate,
-        onAddApp = { showAppPickerFor = "new" },
-        onAppLongClick = { id -> appToRemove = uiState.allVisibleApps.firstOrNull { it.id == id } },
-        onSettingsClick = { showPinDialogForSettings = true },
-        onWifiClick = { showWifiDialog = true },
-        onBluetoothClick = { showBluetoothDialog = true },
-        onEmergencyHold = { onNavigate("emergency_numbers") }
-    )
+        if (uiState.pendingMedsCount > 0) {
+            HomeStatusCard(
+                pendingMedsCount = uiState.pendingMedsCount,
+                onMedsClick = { onNavigate("meds") }
+            )
+        }
 
-    if (showAppPickerFor != null) {
-        val pickerAppId = showAppPickerFor!!
-        AppPickerDialog(
-            appId = pickerAppId,
-            onDismiss = { showAppPickerFor = null },
-            onAppsSelected = { pkgs: List<String> ->
-                val newMappings = mutableMapOf<String, String>()
-                pkgs.forEach { pkg ->
-                    val newId = "mapped_${System.currentTimeMillis()}_${pkg.hashCode()}"
-                    newMappings[newId] = pkg
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.weight(1f).fillMaxWidth(),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            pageSpacing = 24.dp
+        ) { page ->
+            val pageSlots = slots.drop(page * PER_PAGE).take(PER_PAGE)
+            // La altura de cada boton se calcula con el espacio disponible:
+            // asi las 3 filas siempre caben, sin importar la pantalla.
+            Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                for (row in 0 until ROWS) {
+                    Row(Modifier.weight(1f).fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        for (col in 0 until COLUMNS) {
+                            val app = pageSlots.getOrNull(row * COLUMNS + col)
+                            if (app == null) {
+                                Spacer(Modifier.weight(1f))
+                                continue
+                            }
+                            val isTorch = app.id == "flashlight"
+                            BigButton(
+                                emoji = if (isTorch && torchOn) "💡" else app.emoji,
+                                icon = app.icon,
+                                vectorIcon = app.vectorIcon,
+                                label = if (isTorch && torchOn) "Apagar linterna" else app.name,
+                                color = if (isTorch && torchOn) Color(0xFFD97706) else app.color,
+                                badge = if (app.id == "sms" || app.id == "phone") {
+                                    NotificationListener.getBadgeCountByAppId(app.id, uiState.settings.appMappings, badgeCounts)
+                                } else 0,
+                                opensOtherApp = app.id in OPENS_OTHER_APP || app.id.startsWith("mapped_"),
+                                onClick = { open(app) },
+                                // "Mis apps" y "Agregar" no se pueden quitar
+                                onLongClick = if (app.id == "all_apps" || app.id == ADD_ID) null else {
+                                    { appToRemove = app }
+                                },
+                                modifier = Modifier.weight(1f).fillMaxHeight()
+                            )
+                        }
+                    }
                 }
-                settingsVm.addAppMappingsBulk(newMappings)
-                showAppPickerFor = null
-            },
-            onRemove = {
-                settingsVm.updateVisibleApps(uiState.settings.visibleApps - pickerAppId)
-                showAppPickerFor = null
+            }
+        }
+
+        // Puntos que indican en que pagina esta
+        if (pageCount > 1) {
+            Row(
+                Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                repeat(pageCount) { i ->
+                    Box(
+                        Modifier
+                            .padding(horizontal = 6.dp)
+                            .size(if (i == pagerState.currentPage) 14.dp else 10.dp)
+                            .background(
+                                if (i == pagerState.currentPage) Color.White else Color.White.copy(alpha = 0.3f),
+                                CircleShape
+                            )
+                    )
+                }
+            }
+        }
+    }
+
+    if (showAppPicker) {
+        AppPickerDialog(
+            onDismiss = { showAppPicker = false },
+            onAppsSelected = { pkgs ->
+                settingsVm.addAppMappingsBulk(
+                    pkgs.associateBy { pkg -> "mapped_${System.currentTimeMillis()}_${pkg.hashCode()}" }
+                )
+                showAppPicker = false
             }
         )
     }
-    
+
     appToRemove?.let { app ->
         AlertDialog(
             onDismissRequest = { appToRemove = null },
@@ -103,187 +177,6 @@ fun HomeScreen(onNavigate: (String) -> Unit, settingsVm: SettingsViewModel) {
             dismissButton = {
                 TextButton(onClick = { appToRemove = null }) { Text("CANCELAR", fontSize = 18.sp, fontWeight = FontWeight.Bold) }
             }
-        )
-    }
-
-    if (showPinDialogForSettings) {
-        PinDialog(
-            correctPin = uiState.settings.pinCode ?: "1234",
-            onDismiss = { showPinDialogForSettings = false },
-            onSuccess = { 
-                showPinDialogForSettings = false
-                onNavigate("settings")
-            }
-        )
-    }
-
-    if (showWifiDialog) {
-        WifiDialog(onDismiss = { showWifiDialog = false })
-    }
-
-    if (showBluetoothDialog) {
-        BluetoothDialog(onDismiss = { showBluetoothDialog = false })
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun HomeScreenContent(
-    settings: AppSettings,
-    allVisibleApps: List<HomeApp>,
-    activeNotificationsCount: Int,
-    badgeCounts: Map<String, Int>,
-    pendingMedsCount: Int,
-    onNavigate: (String) -> Unit,
-    onAddApp: () -> Unit,
-    onAppLongClick: (String) -> Unit,
-    onSettingsClick: () -> Unit,
-    onWifiClick: () -> Unit,
-    onBluetoothClick: () -> Unit,
-    onEmergencyHold: () -> Unit
-) {
-    val context = LocalContext.current
-    
-    // --- Dynamic Layout Logic ---
-    val cols = when (settings.layout) {
-        LayoutType.GRID_1x1 -> 1
-        LayoutType.GRID_2x3 -> 2
-        LayoutType.GRID_3x4 -> 3
-    }
-    
-    val appsPerPage = when (settings.layout) {
-        LayoutType.GRID_1x1 -> 1
-        LayoutType.GRID_2x3 -> 6
-        LayoutType.GRID_3x4 -> 12
-    }
-
-    // Bereken het totaal aantal items inclusief de "Agregar" knop
-    val totalItemsCount = allVisibleApps.size + 1
-    val pageCount = max(1, ceil(totalItemsCount.toDouble() / appsPerPage.toDouble()).toInt())
-    val pagerState = rememberPagerState(pageCount = { pageCount })
-
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.background,
-    ) { innerPadding ->
-        Column(
-            Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            // Top Bar: Clock, Battery & Notifications
-            HomeTopBar(
-                notificationCount = activeNotificationsCount,
-                onNotificationsClick = { onNavigate("notifications") },
-                onEmergencyHold = onEmergencyHold
-            )
-
-            // Status Card: Alleen nog voor Medicijnen
-            if (pendingMedsCount > 0) {
-                HomeStatusCard(
-                    pendingMedsCount = pendingMedsCount,
-                    onMedsClick = { onNavigate("meds") }
-                )
-            }
-
-            // App Grid Pager
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier.weight(1f).fillMaxWidth(),
-                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 8.dp),
-                pageSpacing = 32.dp
-            ) { pageIndex ->
-            val startIdx = pageIndex * appsPerPage
-            
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(cols),
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(20.dp),
-                horizontalArrangement = Arrangement.spacedBy(20.dp),
-                userScrollEnabled = false
-            ) {
-                // Apps voor deze pagina
-                val endIdx = Math.min(startIdx + appsPerPage, allVisibleApps.size)
-                if (startIdx < allVisibleApps.size) {
-                    val pageApps = allVisibleApps.subList(startIdx, endIdx)
-                    items(pageApps) { app ->
-                        BigButton(
-                            emoji = app.emoji,
-                            icon = app.icon,
-                            vectorIcon = app.vectorIcon,
-                            label = app.name,
-                            color = app.color,
-                            small = settings.layout == LayoutType.GRID_3x4,
-                            badge = if (app.id == "sms" || app.id == "phone") {
-                               NotificationListener.getBadgeCountByAppId(app.id, settings.appMappings, badgeCounts)
-                            } else 0,
-                            weatherText = app.weatherOverlay,
-                            onClick = {
-                                when {
-                                    app.id == "camera" -> AppLauncher.openSystemCamera(context)
-                                    app.id == "photos" -> AppLauncher.openGallery(context)
-                                    app.id == "wifi" -> onWifiClick()
-                                    app.id == "bluetooth" -> onBluetoothClick()
-                                    app.id == "sms" -> AppLauncher.openMessages(context)
-                                    app.id == "settings" -> onSettingsClick()
-                                    app.id.startsWith("mapped_") -> {
-                                        val pkg = settings.appMappings[app.id]
-                                        if (pkg != null) AppLauncher.launchApp(context, pkg)
-                                    }
-                                    else -> onNavigate(app.id)
-                                }
-                            },
-                            onLongClick = {
-                                if (app.id != "settings" && app.id != "all_apps") {
-                                    onAppLongClick(app.id)
-                                }
-                            }
-                        )
-                    }
-                }
-                
-                // Voeg de "Agregar" knop toe als we op de juiste pagina zijn
-                val addBtnIdx = allVisibleApps.size
-                val start = startIdx
-                val limit = startIdx + appsPerPage
-                
-                if (addBtnIdx in start until limit) {
-                    item {
-                        BigButton(
-                            emoji = "➕",
-                            label = "Agregar",
-                            color = Color(0xFF718096),
-                            small = settings.layout == LayoutType.GRID_3x4,
-                            onClick = onAddApp
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-}
-
-@Preview(showSystemUi = true)
-@Composable
-fun PreviewHomeScreen() {
-    SeniorenLauncherTheme {
-        HomeScreenContent(
-            settings = AppSettings(
-                layout = LayoutType.GRID_2x3,
-                visibleApps = setOf("phone", "sms", "camera", "photos", "meds", "weather", "wifi")
-            ),
-            allVisibleApps = emptyList(),
-            activeNotificationsCount = 2,
-            badgeCounts = mapOf("sms" to 1),
-            pendingMedsCount = 1,
-            onNavigate = {},
-            onAddApp = {},
-            onAppLongClick = {},
-            onSettingsClick = {},
-            onWifiClick = {},
-            onBluetoothClick = {},
-            onEmergencyHold = {}
         )
     }
 }

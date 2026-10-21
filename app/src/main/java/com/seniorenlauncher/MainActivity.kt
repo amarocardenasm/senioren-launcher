@@ -31,7 +31,6 @@ class MainActivity : ComponentActivity() {
     private var alarmTriggered = mutableStateOf<String?>(null)
     private var alarmSoundUri = mutableStateOf<String?>(null)
     private var alarmIsRemote = mutableStateOf(false)
-    private var navigateToWeatherAfterAlarm = mutableStateOf(false)
     private var fallDetectedTriggered = mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -69,7 +68,6 @@ class MainActivity : ComponentActivity() {
             val alarmId by currentAlarmId
             val soundUri by alarmSoundUri
             val isRemote by alarmIsRemote
-            val shouldNavToWeather by navigateToWeatherAfterAlarm
             val isFallDetected by fallDetectedTriggered
             
             var currentRoute by remember { mutableStateOf<String?>(null) }
@@ -118,7 +116,7 @@ class MainActivity : ComponentActivity() {
                                 currentAlarmId.value = -1L
                             },
                             onNavigateToWeather = {
-                                navigateToWeatherAfterAlarm.value = true
+                                com.seniorenlauncher.util.AppLauncher.openWeather(this@MainActivity)
                             }
                         )
                     } else if (!settings.hasCompletedSetup) {
@@ -135,8 +133,6 @@ class MainActivity : ComponentActivity() {
                             Box(Modifier.weight(1f)) {
                                 AppNavigation(
                                     settingsVm = settingsVm, 
-                                    initialWeatherNav = shouldNavToWeather,
-                                    onNavigatedToWeather = { navigateToWeatherAfterAlarm.value = false },
                                     onRouteChanged = { currentRoute = it }
                                 )
                             }

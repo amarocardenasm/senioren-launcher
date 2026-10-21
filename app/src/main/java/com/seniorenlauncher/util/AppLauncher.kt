@@ -67,6 +67,30 @@ object AppLauncher {
         Toast.makeText(context, "No se encontró la app de galería", Toast.LENGTH_SHORT).show()
     }
 
+    /** Clima: la app del fabricante si existe; si no, el clima de Google en el navegador. */
+    fun openWeather(context: Context) {
+        if (DefaultApps.open(context, "weather")) return
+        try {
+            context.startActivity(
+                Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://www.google.com/search?q=clima"))
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            )
+        } catch (e: Exception) {
+            Toast.makeText(context, "No se encontró una app de clima", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    fun openBrowser(context: Context) {
+        try {
+            context.startActivity(
+                Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://www.google.cl"))
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            )
+        } catch (e: Exception) {
+            Toast.makeText(context, "No se encontró un navegador", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     suspend fun getInstalledApps(context: Context, includeIcons: Boolean = false): List<InstalledApp> = withContext(Dispatchers.IO) {
         val pm = context.packageManager
         val launcherIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)

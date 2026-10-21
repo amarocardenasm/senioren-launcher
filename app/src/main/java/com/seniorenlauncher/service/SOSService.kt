@@ -5,23 +5,16 @@ import android.app.Service
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
-import android.location.Location
 import android.net.Uri
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
-import com.google.android.gms.tasks.Task
 import com.seniorenlauncher.LauncherApp
 import com.seniorenlauncher.data.model.QuickContact
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 class SOSService : Service() {
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -87,16 +80,6 @@ class SOSService : Service() {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             startActivity(intent)
-        }
-    }
-
-    private suspend fun <T> Task<T>.awaitTask(): T = suspendCoroutine { cont ->
-        addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                cont.resume(task.result)
-            } else {
-                cont.resumeWithException(task.exception ?: Exception("Task failed"))
-            }
         }
     }
 
