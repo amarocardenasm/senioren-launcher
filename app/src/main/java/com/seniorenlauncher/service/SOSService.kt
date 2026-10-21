@@ -43,7 +43,7 @@ class SOSService : Service() {
             startForeground(
                 1001, 
                 notification, 
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION or ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
             )
         } else {
             startForeground(1001, notification)
@@ -97,25 +97,6 @@ class SOSService : Service() {
             } else {
                 cont.resumeWithException(task.exception ?: Exception("Task failed"))
             }
-        }
-    }
-
-    private suspend fun getLocation(): Location? {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return null
-        }
-
-        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        return try {
-            val lastLocation = fusedLocationClient.lastLocation.awaitTask()
-            if (lastLocation != null && (System.currentTimeMillis() - lastLocation.time) < 60000) {
-                lastLocation
-            } else {
-                fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null).awaitTask()
-            }
-        } catch (e: Exception) {
-            Log.e(tag, "Fout in getLocation", e)
-            null
         }
     }
 

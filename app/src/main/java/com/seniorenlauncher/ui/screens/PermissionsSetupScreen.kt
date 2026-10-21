@@ -53,12 +53,6 @@ fun PermissionsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
         val list = mutableListOf<PermissionCategory>()
         
         val locationPermissions = mutableListOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            locationPermissions.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            locationPermissions.add(Manifest.permission.FOREGROUND_SERVICE_LOCATION)
-        }
 
         list.add(PermissionCategory(
             if (isSenior) "CLIMA" else "UBICACIÓN", 
