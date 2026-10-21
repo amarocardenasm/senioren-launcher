@@ -75,14 +75,7 @@ fun BigButton(
                 spotColor = color
             )
             .clip(RoundedCornerShape(cornerRadius))
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        color.copy(alpha = 0.85f),
-                        color.copy(alpha = 0.95f)
-                    )
-                )
-            )
+            .background(color)
             .border(
                 width = 1.dp,
                 color = Color.White.copy(alpha = 0.15f),
@@ -96,19 +89,6 @@ fun BigButton(
             ),
         contentAlignment = Alignment.Center
     ) {
-        // High-end glass shine effect
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(Color.White.copy(alpha = 0.12f), Color.Transparent),
-                        center = androidx.compose.ui.geometry.Offset(0f, 0f),
-                        radius = 400f
-                    )
-                )
-        )
-
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
@@ -126,7 +106,7 @@ fun BigButton(
                     Image(
                         painter = rememberAsyncImagePainter(icon),
                         contentDescription = null,
-                        modifier = Modifier.size(if (small) 44.dp else 60.dp),
+                        modifier = Modifier.size(if (small) 48.dp else 68.dp),
                         contentScale = ContentScale.Fit
                     )
                 } else if (emoji != null) {
@@ -163,16 +143,16 @@ fun BigButton(
                 }
             }
             
-            Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(if (small) 8.dp else 12.dp))
             
             Text(
-                label.uppercase(), 
-                fontSize = if (small) 15.sp else 19.sp, 
+                label, 
+                fontSize = if (small) 16.sp else 21.sp, 
                 fontWeight = FontWeight.Black,
                 color = Color.White, 
                 textAlign = TextAlign.Center, 
-                maxLines = 1,
-                letterSpacing = 1.2.sp,
+                maxLines = 2,
+                lineHeight = if (small) 18.sp else 24.sp,
                 overflow = TextOverflow.Ellipsis
             )
         }

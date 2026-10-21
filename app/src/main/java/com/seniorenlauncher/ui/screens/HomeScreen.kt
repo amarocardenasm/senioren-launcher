@@ -26,6 +26,8 @@ import com.seniorenlauncher.ui.components.*
 import com.seniorenlauncher.ui.screens.home.*
 import com.seniorenlauncher.ui.theme.SeniorenLauncherTheme
 import com.seniorenlauncher.util.AppLauncher
+import com.seniorenlauncher.util.DefaultApps
+import com.seniorenlauncher.util.Torch
 import kotlin.math.ceil
 import kotlin.math.max
 
@@ -62,7 +64,11 @@ fun HomeScreen(onNavigate: (String) -> Unit, settingsVm: SettingsViewModel) {
         onNavigate = onNavigate,
         onAddApp = { showAppPickerFor = "new" },
         onAppLongClick = { id -> appToRemove = uiState.allVisibleApps.firstOrNull { it.id == id } },
-        onSettingsClick = { showPinDialogForSettings = true },
+        onSettingsClick = {
+            // Solo pide clave si alguien (un familiar) la configuró
+            if (uiState.settings.pinCode.isNullOrBlank()) onNavigate("settings")
+            else showPinDialogForSettings = true
+        },
         onWifiClick = { showWifiDialog = true },
         onBluetoothClick = { showBluetoothDialog = true },
         onEmergencyHold = { onNavigate("emergency_numbers") }
@@ -108,7 +114,7 @@ fun HomeScreen(onNavigate: (String) -> Unit, settingsVm: SettingsViewModel) {
 
     if (showPinDialogForSettings) {
         PinDialog(
-            correctPin = uiState.settings.pinCode ?: "1234",
+            correctPin = uiState.settings.pinCode ?: "",
             onDismiss = { showPinDialogForSettings = false },
             onSuccess = { 
                 showPinDialogForSettings = false
@@ -143,6 +149,8 @@ fun HomeScreenContent(
     onEmergencyHold: () -> Unit
 ) {
     val context = LocalContext.current
+    LaunchedEffect(Unit) { Torch.init(context) }
+    val torchOn by Torch.isOn.collectAsState()
     
     // --- Dynamic Layout Logic ---
     val cols = when (settings.layout) {
@@ -207,12 +215,13 @@ fun HomeScreenContent(
                 if (startIdx < allVisibleApps.size) {
                     val pageApps = allVisibleApps.subList(startIdx, endIdx)
                     items(pageApps) { app ->
+                        val isTorch = app.id == "flashlight"
                         BigButton(
-                            emoji = app.emoji,
+                            emoji = if (isTorch && torchOn) "💡" else app.emoji,
                             icon = app.icon,
                             vectorIcon = app.vectorIcon,
-                            label = app.name,
-                            color = app.color,
+                            label = if (isTorch && torchOn) "Apagar linterna" else app.name,
+                            color = if (isTorch) (if (torchOn) Color(0xFFD97706) else Color(0xFF475569)) else app.color,
                             small = settings.layout == LayoutType.GRID_3x4,
                             badge = if (app.id == "sms" || app.id == "phone") {
                                NotificationListener.getBadgeCountByAppId(app.id, settings.appMappings, badgeCounts)
@@ -220,8 +229,10 @@ fun HomeScreenContent(
                             weatherText = app.weatherOverlay,
                             onClick = {
                                 when {
-                                    app.id == "camera" -> AppLauncher.openSystemCamera(context)
-                                    app.id == "photos" -> AppLauncher.openGallery(context)
+                                    app.id == "camera" -> if (!DefaultApps.open(context, "camera")) AppLauncher.openSystemCamera(context)
+                                    app.id == "photos" -> if (!DefaultApps.open(context, "photos")) AppLauncher.openGallery(context)
+                                    app.id == "browser" -> if (!DefaultApps.open(context, "browser")) AppLauncher.openBrowser(context)
+                                    app.id == "flashlight" -> Torch.toggle(context)
                                     app.id == "wifi" -> onWifiClick()
                                     app.id == "bluetooth" -> onBluetoothClick()
                                     app.id == "sms" -> AppLauncher.openMessages(context)
