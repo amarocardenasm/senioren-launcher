@@ -575,15 +575,11 @@ fun ContactListItem(contact: DeviceContact, isFavorite: Boolean, onToggleFavorit
                     }
                 }
                 Spacer(Modifier.height(12.dp))
-                Text(
-                    contact.name,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Black,
-                    color = Color.White,
-                    textAlign = TextAlign.Center,
-                    maxLines = 2,
-                    lineHeight = 24.sp,
-                    overflow = TextOverflow.Ellipsis
+                com.seniorenlauncher.ui.components.AutoSizeText(
+                    text = contact.name,
+                    maxFontSize = 20.sp,
+                    minFontSize = 13.sp,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
             IconButton(

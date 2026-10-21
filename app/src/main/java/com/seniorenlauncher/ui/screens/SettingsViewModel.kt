@@ -13,6 +13,7 @@ import com.seniorenlauncher.data.model.*
 import com.seniorenlauncher.service.FallDetectionService
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -21,6 +22,11 @@ class SettingsViewModel : ViewModel() {
 
     val settings: StateFlow<AppSettings> = repository.settingsFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AppSettings())
+
+    /** False hasta leer los ajustes guardados: evita mostrar el asistente un instante al abrir. */
+    val loaded: StateFlow<Boolean> = repository.settingsFlow
+        .map { true }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     fun updateTheme(t: AppTheme) {
         viewModelScope.launch { repository.setTheme(t) }
@@ -65,19 +71,8 @@ class SettingsViewModel : ViewModel() {
         }
     }
 
-    private fun hasFallDetectionPermissions(context: Context): Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACTIVITY_RECOGNITION) != PackageManager.PERMISSION_GRANTED) {
-                return false
-            }
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            if (ContextCompat.checkSelfPermission(context, Manifest.permission.FOREGROUND_SERVICE_HEALTH) != PackageManager.PERMISSION_GRANTED) {
-                return false
-            }
-        }
-        return true
-    }
+    // La deteccion de caidas solo usa el acelerometro: no necesita permisos
+    private fun hasFallDetectionPermissions(context: Context): Boolean = true
 
     fun toggleScamProtection() {
         viewModelScope.launch {

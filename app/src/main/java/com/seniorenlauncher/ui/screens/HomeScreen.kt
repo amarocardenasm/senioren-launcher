@@ -2,9 +2,9 @@ package com.seniorenlauncher.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,10 +22,8 @@ import com.seniorenlauncher.util.AppLauncher
 import com.seniorenlauncher.util.DefaultApps
 import com.seniorenlauncher.util.Torch
 
-/** Siempre 3 columnas x 3 filas por pagina: igual en todos los telefonos. */
-private const val COLUMNS = 3
-private const val ROWS = 3
-private const val PER_PAGE = COLUMNS * ROWS
+/** 2 columnas, igual que "Mis apps": botones grandes y cuadrados que se recorren hacia abajo. */
+private const val COLUMNS = 2
 private const val ADD_ID = "__add__"
 
 /** Botones que abren otra app (muestran "Abriendo…" mientras carga). */
@@ -47,8 +45,6 @@ fun HomeScreen(onNavigate: (String) -> Unit, settingsVm: SettingsViewModel) {
 
     val apps = uiState.allVisibleApps
     val slots = apps + HomeApp(id = ADD_ID, name = "Agregar", emoji = "➕", color = Color(0xFF334155))
-    val pageCount = (slots.size + PER_PAGE - 1) / PER_PAGE
-    val pagerState = rememberPagerState(pageCount = { pageCount })
 
     fun open(app: HomeApp) {
         when {
@@ -88,65 +84,32 @@ fun HomeScreen(onNavigate: (String) -> Unit, settingsVm: SettingsViewModel) {
             )
         }
 
-        HorizontalPager(
-            state = pagerState,
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(COLUMNS),
             modifier = Modifier.weight(1f).fillMaxWidth(),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-            pageSpacing = 24.dp
-        ) { page ->
-            val pageSlots = slots.drop(page * PER_PAGE).take(PER_PAGE)
-            // La altura de cada boton se calcula con el espacio disponible:
-            // asi las 3 filas siempre caben, sin importar la pantalla.
-            Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                for (row in 0 until ROWS) {
-                    Row(Modifier.weight(1f).fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        for (col in 0 until COLUMNS) {
-                            val app = pageSlots.getOrNull(row * COLUMNS + col)
-                            if (app == null) {
-                                Spacer(Modifier.weight(1f))
-                                continue
-                            }
-                            val isTorch = app.id == "flashlight"
-                            BigButton(
-                                emoji = if (isTorch && torchOn) "💡" else app.emoji,
-                                icon = app.icon,
-                                vectorIcon = app.vectorIcon,
-                                label = if (isTorch && torchOn) "Apagar linterna" else app.name,
-                                color = if (isTorch && torchOn) Color(0xFFD97706) else app.color,
-                                badge = if (app.id == "sms" || app.id == "phone") {
-                                    NotificationListener.getBadgeCountByAppId(app.id, uiState.settings.appMappings, badgeCounts)
-                                } else 0,
-                                opensOtherApp = app.id in OPENS_OTHER_APP || app.id.startsWith("mapped_"),
-                                onClick = { open(app) },
-                                // "Mis apps" y "Agregar" no se pueden quitar
-                                onLongClick = if (app.id == "all_apps" || app.id == ADD_ID) null else {
-                                    { appToRemove = app }
-                                },
-                                modifier = Modifier.weight(1f).fillMaxHeight()
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        // Puntos que indican en que pagina esta
-        if (pageCount > 1) {
-            Row(
-                Modifier.fillMaxWidth().padding(bottom = 12.dp),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                repeat(pageCount) { i ->
-                    Box(
-                        Modifier
-                            .padding(horizontal = 6.dp)
-                            .size(if (i == pagerState.currentPage) 14.dp else 10.dp)
-                            .background(
-                                if (i == pagerState.currentPage) Color.White else Color.White.copy(alpha = 0.3f),
-                                CircleShape
-                            )
-                    )
-                }
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            items(slots, key = { it.id }) { app ->
+                val isTorch = app.id == "flashlight"
+                BigButton(
+                    emoji = if (isTorch && torchOn) "💡" else app.emoji,
+                    icon = app.icon,
+                    vectorIcon = app.vectorIcon,
+                    label = if (isTorch && torchOn) "Apagar linterna" else app.name,
+                    color = if (isTorch && torchOn) Color(0xFFF59E0B) else app.color,
+                    badge = if (app.id == "sms" || app.id == "phone") {
+                        NotificationListener.getBadgeCountByAppId(app.id, uiState.settings.appMappings, badgeCounts)
+                    } else 0,
+                    opensOtherApp = app.id in OPENS_OTHER_APP || app.id.startsWith("mapped_"),
+                    onClick = { open(app) },
+                    // "Mis apps" y "Agregar" no se pueden quitar
+                    onLongClick = if (app.id == "all_apps" || app.id == ADD_ID) null else {
+                        { appToRemove = app }
+                    },
+                    modifier = Modifier.aspectRatio(1f)
+                )
             }
         }
     }

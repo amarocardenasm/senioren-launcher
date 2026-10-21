@@ -2,6 +2,7 @@ package com.seniorenlauncher.ui.screens.home
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bluetooth
+import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
@@ -23,8 +24,8 @@ data class HomeState(
 /** Botones que muestran la app real del telefono (icono y color propios). */
 private val REAL_APP_IDS = setOf("photos", "browser", "camera", "sms", "email", "settings", "weather")
 
-/** Posicion fija de "Mis apps": arriba a la derecha de la primera pagina. */
-private const val MY_APPS_SLOT = 2
+/** Posicion fija de "Mis apps": arriba a la derecha (primera fila, segunda columna). */
+private const val MY_APPS_SLOT = 1
 
 class HomeViewModel : ViewModel() {
     private val repository = LauncherApp.instance.settingsRepository
@@ -66,6 +67,7 @@ class HomeViewModel : ViewModel() {
                         vectorIcon = when (app.id) {
                             "bluetooth" -> Icons.Default.Bluetooth
                             "wifi" -> Icons.Default.Wifi
+                            "power" -> Icons.Default.PowerSettingsNew
                             else -> null
                         },
                         color = Color(app.color)

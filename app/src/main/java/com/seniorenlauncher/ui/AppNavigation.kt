@@ -37,7 +37,6 @@ fun AppNavigation(
         composable("meds") { MedicationScreen(onBack = { navController.popBackStack() }) }
         composable("magnifier") { MagnifierScreen(onBack = { navController.popBackStack() }) }
         composable("notes") { NotesScreen(onBack = { navController.popBackStack() }) }
-        composable("steps") { StepsScreen(onBack = { navController.popBackStack() }) }
         composable("emergency") { EmergencyInfoScreen(onBack = { navController.popBackStack() }) }
         composable("emergency_numbers") {
             EmergencyCallScreen(
@@ -46,6 +45,7 @@ fun AppNavigation(
             )
         }
         composable("sos_settings") { SosContactSettingsScreen(onBack = { navController.popBackStack() }) }
+        composable("power") { PowerScreen(onBack = { navController.popBackStack() }) }
         composable("all_apps") { AllAppsScreen(onBack = { navController.popBackStack() }) }
         composable("notifications") { 
             NotificationsScreen(

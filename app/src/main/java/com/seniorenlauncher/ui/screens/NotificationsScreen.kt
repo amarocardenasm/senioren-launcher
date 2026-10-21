@@ -4,9 +4,13 @@ import android.app.Notification
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.Drawable
 import android.provider.Settings
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import coil.compose.rememberAsyncImagePainter
 import android.service.notification.StatusBarNotification
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -39,14 +43,17 @@ data class SingleNotification(
     val title: String,
     val text: String,
     val intent: PendingIntent?,
-    val timestamp: Long
+    val timestamp: Long,
+    /** Foto de quien escribe (WhatsApp, Mensajes), si la app la manda. */
+    val avatar: Drawable? = null
 )
 
 data class GroupedNotification(
     val packageName: String,
     val appName: String,
     val items: List<SingleNotification>,
-    val timestamp: Long
+    val timestamp: Long,
+    val appIcon: Drawable? = null
 )
 
 @Composable
@@ -64,7 +71,7 @@ fun NotificationsScreen(onBack: () -> Unit, onNavigate: (String) -> Unit) {
             .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 12.dp, vertical = 8.dp)
     ) {
-        ScreenHeader(title = "Mensajes y recordatorios", onBack = onBack)
+        ScreenHeader(title = "Avisos", onBack = onBack)
 
         if (!hasPermission) {
             PermissionRequiredScreen()
@@ -184,6 +191,13 @@ fun PermissionRequiredScreen() {
     }
 }
 
+/** Cuantos mensajes se ven de cada app antes de "Ver más". */
+private const val VISIBLE_PER_APP = 3
+
+/**
+ * Una tarjeta por app (como un grupo de WhatsApp): icono grande de la app
+ * arriba, y debajo cada mensaje con la foto o inicial de quien lo envía.
+ */
 @Composable
 fun NotificationGroupCard(
     group: GroupedNotification,
@@ -192,97 +206,99 @@ fun NotificationGroupCard(
     onNavigate: (String) -> Unit
 ) {
     val context = LocalContext.current
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                if (group.items.size == 1) {
-                    handleNotificationClick(context, group.packageName, group.items.first(), onNavigate)
-                } else {
-                    onToggleExpand()
-                }
-            },
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(32.dp),
+        color = Color(0xFF1E293B),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
     ) {
         Column(Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    group.appName,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Spacer(Modifier.weight(1f))
-                
-                // Clear entire group
-                IconButton(onClick = {
-                    group.items.forEach { NotificationListener.dismiss(it.key) }
-                }) {
-                    Icon(Icons.Default.Close, "Borrar grupo", tint = Color.Gray)
-                }
-            }
-            
-            Spacer(Modifier.height(4.dp))
-            
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f)) {
-                    Text(
-                        text = if (group.items.size > 1) {
-                            "${group.items.size} mensajes nuevos"
-                        } else {
-                            group.items.first().title
-                        },
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        lineHeight = 28.sp
-                    )
-                    
-                    if (group.items.size == 1) {
-                        Text(
-                            group.items.first().text,
-                            fontSize = 18.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                }
-                
-                if (group.items.size > 1) {
-                    Icon(
-                        if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                if (group.appIcon != null) {
+                    Image(
+                        painter = rememberAsyncImagePainter(group.appIcon),
                         contentDescription = null,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.size(64.dp)
                     )
+                }
+                Spacer(Modifier.width(16.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(group.appName, fontSize = 24.sp, fontWeight = FontWeight.Black, color = Color.White)
+                    Text(
+                        if (group.items.size == 1) "1 mensaje nuevo" else "${group.items.size} mensajes nuevos",
+                        fontSize = 17.sp,
+                        color = Color(0xFFCBD5E1)
+                    )
+                }
+                IconButton(onClick = { group.items.forEach { NotificationListener.dismiss(it.key) } }) {
+                    Icon(Icons.Default.Close, "Borrar los avisos de ${group.appName}", tint = Color.White.copy(alpha = 0.6f), modifier = Modifier.size(30.dp))
                 }
             }
 
-            AnimatedVisibility(visible = isExpanded && group.items.size > 1) {
-                Column(Modifier.padding(top = 16.dp)) {
-                    group.items.forEach { item ->
-                        HorizontalDivider(thickness = 0.5.dp, color = Color.Gray.copy(alpha = 0.3f))
-                        Row(
-                            Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    handleNotificationClick(context, group.packageName, item, onNavigate)
-                                }
-                                .padding(vertical = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(Modifier.weight(1f)) {
-                                Text(item.title, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                                Text(item.text, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            val shown = if (isExpanded) group.items else group.items.take(VISIBLE_PER_APP)
+            shown.forEach { item ->
+                Spacer(Modifier.height(12.dp))
+                Surface(
+                    onClick = { handleNotificationClick(context, group.packageName, item, onNavigate) },
+                    shape = RoundedCornerShape(24.dp),
+                    color = Color.White.copy(alpha = 0.06f),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+                        SenderAvatar(item)
+                        Spacer(Modifier.width(14.dp))
+                        Column(Modifier.weight(1f)) {
+                            if (item.title.isNotBlank()) {
+                                Text(item.title, fontSize = 21.sp, fontWeight = FontWeight.Black, color = Color.White, maxLines = 2, overflow = TextOverflow.Ellipsis)
                             }
-                            IconButton(onClick = { NotificationListener.dismiss(item.key) }) {
-                                Icon(Icons.Default.Close, contentDescription = "Borrar", modifier = Modifier.size(20.dp))
+                            if (item.text.isNotBlank()) {
+                                Text(item.text, fontSize = 19.sp, color = Color(0xFFE2E8F0), maxLines = 3, overflow = TextOverflow.Ellipsis, lineHeight = 25.sp)
                             }
+                            Text(timeAgo(item.timestamp), fontSize = 15.sp, color = Color(0xFF94A3B8), modifier = Modifier.padding(top = 4.dp))
                         }
                     }
                 }
             }
+
+            if (group.items.size > VISIBLE_PER_APP) {
+                TextButton(onClick = onToggleExpand, modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 4.dp)) {
+                    Text(
+                        if (isExpanded) "Ver menos" else "Ver ${group.items.size - VISIBLE_PER_APP} más",
+                        fontSize = 19.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+            }
         }
+    }
+}
+
+@Composable
+private fun SenderAvatar(item: SingleNotification) {
+    if (item.avatar != null) {
+        Image(
+            painter = rememberAsyncImagePainter(item.avatar),
+            contentDescription = null,
+            modifier = Modifier.size(56.dp).clip(CircleShape)
+        )
+    } else {
+        Box(
+            Modifier.size(56.dp).background(Color(0xFF2563EB), CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(contactInitials(item.title.ifBlank { "?" }), color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Black)
+        }
+    }
+}
+
+private fun timeAgo(timestamp: Long): String {
+    val minutes = (System.currentTimeMillis() - timestamp) / 60_000
+    return when {
+        minutes < 1 -> "Recién"
+        minutes < 60 -> "Hace $minutes min"
+        minutes < 24 * 60 -> "Hace ${minutes / 60} h"
+        else -> "Hace ${minutes / (24 * 60)} días"
     }
 }
 
@@ -297,21 +313,27 @@ fun groupAndFormatNotifications(context: Context, notifications: List<StatusBarN
                 pkg.split(".").last().replaceFirstChar { it.uppercase() }
             }
             
-            val items = sbns.map { sbn ->
-                SingleNotification(
-                    key = sbn.key,
-                    title = sbn.notification.extras.getString(Notification.EXTRA_TITLE) ?: "",
-                    text = sbn.notification.extras.getCharSequence(Notification.EXTRA_TEXT)?.toString() ?: "",
-                    intent = sbn.notification.contentIntent,
-                    timestamp = sbn.postTime
-                )
-            }.sortedByDescending { it.timestamp }
+            // El "resumen" de grupo (ej. "5 mensajes de 2 chats") se omite: mostramos cada mensaje
+            val items = sbns
+                .filter { it.notification.flags and Notification.FLAG_GROUP_SUMMARY == 0 }
+                .ifEmpty { sbns }
+                .map { sbn ->
+                    SingleNotification(
+                        key = sbn.key,
+                        title = sbn.notification.extras.getCharSequence(Notification.EXTRA_TITLE)?.toString() ?: "",
+                        text = sbn.notification.extras.getCharSequence(Notification.EXTRA_TEXT)?.toString() ?: "",
+                        intent = sbn.notification.contentIntent,
+                        timestamp = sbn.postTime,
+                        avatar = try { sbn.notification.getLargeIcon()?.loadDrawable(context) } catch (e: Exception) { null }
+                    )
+                }.sortedByDescending { it.timestamp }
 
             GroupedNotification(
                 packageName = pkg,
                 appName = appName,
                 items = items,
-                timestamp = items.first().timestamp
+                timestamp = items.first().timestamp,
+                appIcon = try { pm.getApplicationIcon(pkg) } catch (e: Exception) { null }
             )
         }
         .sortedByDescending { it.timestamp }

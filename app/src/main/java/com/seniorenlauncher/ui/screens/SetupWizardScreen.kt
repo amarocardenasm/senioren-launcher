@@ -46,13 +46,39 @@ fun SetupWizardScreen(
     settingsVm: SettingsViewModel
 ) {
     val settings by settingsVm.settings.collectAsState()
-    
-    var flow by remember { mutableStateOf(WizardSetupFlow.NONE) }
-    var caregiverStep by remember { mutableIntStateOf(1) }
-    var seniorStep by remember { mutableIntStateOf(1) }
+    val context = LocalContext.current
+
+    // El avance se guarda en el telefono: al elegir Senior Launcher como
+    // pantalla de inicio Android reabre la app, y antes eso borraba el progreso.
+    val progress = remember { context.getSharedPreferences("asistente_inicial", Context.MODE_PRIVATE) }
+    var homeAsked by remember { mutableStateOf(progress.getBoolean("home_asked", false)) }
+    var flow by remember {
+        mutableStateOf(runCatching { WizardSetupFlow.valueOf(progress.getString("flow", null) ?: "NONE") }.getOrDefault(WizardSetupFlow.NONE))
+    }
+    var caregiverStep by remember { mutableIntStateOf(progress.getInt("caregiver_step", 1)) }
+    var seniorStep by remember { mutableIntStateOf(progress.getInt("senior_step", 1)) }
+    LaunchedEffect(homeAsked, flow, caregiverStep, seniorStep) {
+        progress.edit()
+            .putBoolean("home_asked", homeAsked)
+            .putString("flow", flow.name)
+            .putInt("caregiver_step", caregiverStep)
+            .putInt("senior_step", seniorStep)
+            .apply()
+    }
+    val finish = {
+        progress.edit().clear().apply()
+        settingsVm.completeSetup()
+        onFinished()
+    }
 
     if (!settings.privacyAccepted) {
         PrivacyConsentScreen(onAccepted = { settingsVm.acceptPrivacy() })
+        return
+    }
+
+    // Primera pregunta: dejar Senior Launcher como pantalla de inicio
+    if (!homeAsked) {
+        DefaultAppsSetupScreen(onNext = { homeAsked = true })
         return
     }
 
@@ -63,11 +89,10 @@ fun SetupWizardScreen(
         WizardSetupFlow.CAREGIVER -> {
             when (caregiverStep) {
                 1 -> PermissionsSetupScreen(onNext = { caregiverStep = 2 }, isSenior = false)
-                2 -> DefaultAppsSetupScreen(onNext = { caregiverStep = 3 }, isSenior = false)
-                3 -> SafeInternetStep(onNext = { caregiverStep = 4 })
-                4 -> SosSetupScreen(onNext = { caregiverStep = 5 }, settingsVm = settingsVm)
-                5 -> FallDetectionSetupScreen(onNext = { caregiverStep = 6 }, settingsVm = settingsVm)
-                6 -> HandoverScreen(onNext = {
+                2 -> SafeInternetStep(onNext = { caregiverStep = 3 })
+                3 -> SosSetupScreen(onNext = { caregiverStep = 4 }, settingsVm = settingsVm)
+                4 -> FallDetectionSetupScreen(onNext = { caregiverStep = 5 }, settingsVm = settingsVm)
+                5 -> HandoverScreen(onNext = {
                     // El familiar ya hizo la parte tecnica: la persona solo elige letras y colores
                     flow = WizardSetupFlow.SENIOR
                     seniorStep = SENIOR_STEP_READING
@@ -86,20 +111,13 @@ fun SetupWizardScreen(
                 1 -> SeniorWelcomeStep(onNext = { seniorStep = SENIOR_STEP_READING })
                 SENIOR_STEP_READING -> SeniorReadingStep(onNext = { seniorStep = 3 }, settingsVm = settingsVm)
                 3 -> SeniorColorsStep(onNext = { seniorStep = if (technicalDone) 8 else 4 }, settingsVm = settingsVm)
-                4 -> PermissionsSetupScreen(onNext = { seniorStep = 6 }, isSenior = true)
-                6 -> DefaultAppsSetupScreen(onNext = { seniorStep = 7 }, isSenior = true)
+                4 -> PermissionsSetupScreen(onNext = { seniorStep = 7 }, isSenior = true)
                 7 -> SafeInternetStep(onNext = { seniorStep = 8 })
                 8 -> {
                     if (sosCount.isNotEmpty()) {
-                        LaunchedEffect(Unit) {
-                            settingsVm.completeSetup()
-                            onFinished()
-                        }
+                        LaunchedEffect(Unit) { finish() }
                     } else {
-                        SeniorEmergencyStep(onNext = {
-                            settingsVm.completeSetup()
-                            onFinished()
-                        })
+                        SeniorEmergencyStep(onNext = { finish() })
                     }
                 }
                 else -> {}

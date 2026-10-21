@@ -171,14 +171,11 @@ fun AppItem(app: InstalledApp, onClick: () -> Unit) {
         
         Spacer(Modifier.height(12.dp))
         
-        Text(
+        com.seniorenlauncher.ui.components.AutoSizeText(
             text = if (opening) "Abriendo…" else app.name,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Black,
-            textAlign = TextAlign.Center,
-            maxLines = 2,
-            lineHeight = 24.sp,
-            color = Color.White
+            maxFontSize = 20.sp,
+            minFontSize = 13.sp,
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }

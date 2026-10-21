@@ -83,32 +83,6 @@ fun PermissionsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
             "Si dice que no: la agenda no podrá mostrar ni guardar citas."
         ))
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val healthPermissions = mutableListOf(Manifest.permission.ACTIVITY_RECOGNITION)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                healthPermissions.add(Manifest.permission.FOREGROUND_SERVICE_HEALTH)
-            }
-            
-            list.add(PermissionCategory(
-                "SALUD", 
-                "Para que el teléfono cuente sus pasos diarios.", 
-                "Privacidad: estos datos quedan en su propio teléfono.",
-                Icons.AutoMirrored.Filled.DirectionsWalk, 
-                healthPermissions,
-                "Si dice que no: el contador de pasos y la detección de caídas no funcionarán."
-            ))
-        }
-
-        list.add(PermissionCategory(
-            if (isSenior) "LUPA" else "CÁMARA", 
-            if (isSenior) "Para leer letra chica con facilidad usando la cámara."
-            else "Necesario para la lupa.", 
-            "Privacidad: no se guarda ninguna foto sin que usted lo pida.",
-            Icons.Default.CameraAlt, 
-            listOf(Manifest.permission.CAMERA),
-            "Si dice que no: la lupa no funcionará."
-        ))
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             list.add(PermissionCategory(
                 if (isSenior) "RECORDATORIOS" else "AVISOS", 

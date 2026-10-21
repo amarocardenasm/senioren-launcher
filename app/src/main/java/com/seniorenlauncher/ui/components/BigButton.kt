@@ -141,29 +141,29 @@ fun BigButton(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 10.dp)
+            modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp, vertical = 12.dp)
         ) {
-            val iconMod = Modifier.size(56.dp)
-            when {
-                vectorIcon != null -> Icon(vectorIcon, contentDescription = null, modifier = iconMod, tint = Color.White)
-                icon != null -> Image(
-                    painter = rememberAsyncImagePainter(icon),
-                    contentDescription = null,
-                    modifier = iconMod,
-                    contentScale = ContentScale.Fit
-                )
-                emoji != null -> Text(emoji, fontSize = 44.sp)
+            // El icono ocupa lo que sobra y el nombre siempre cabe completo
+            Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                val iconMod = Modifier.fillMaxSize(0.8f).aspectRatio(1f)
+                when {
+                    vectorIcon != null -> Icon(vectorIcon, contentDescription = null, modifier = iconMod, tint = Color.White)
+                    icon != null -> Image(
+                        painter = rememberAsyncImagePainter(icon),
+                        contentDescription = null,
+                        modifier = iconMod,
+                        contentScale = ContentScale.Fit
+                    )
+                    emoji != null -> Text(emoji, fontSize = 52.sp)
+                }
             }
-            Spacer(Modifier.height(8.dp))
-            Text(
-                label,
-                fontSize = 17.sp,
-                fontWeight = FontWeight.Black,
-                color = Color.White,
-                textAlign = TextAlign.Center,
-                maxLines = 2,
-                lineHeight = 20.sp,
-                overflow = TextOverflow.Ellipsis
+            Spacer(Modifier.height(6.dp))
+            AutoSizeText(
+                text = label,
+                maxFontSize = 20.sp,
+                minFontSize = 13.sp,
+                withShadow = true,
+                modifier = Modifier.fillMaxWidth()
             )
         }
 

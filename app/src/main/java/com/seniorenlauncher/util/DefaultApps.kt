@@ -113,8 +113,11 @@ object DefaultApps {
             (best[2] / best[3]).toInt()
         )
         AColor.colorToHSV(rgb, hsv)
-        hsv[2] = hsv[2].coerceAtMost(0.62f)
-        hsv[1] = hsv[1].coerceAtMost(0.85f)
+        // Colores vivos: bien saturados y luminosos. Los amarillos/verde lima se
+        // oscurecen un poco mas para que el nombre en blanco se siga leyendo.
+        val yellowish = hsv[0] in 40f..85f
+        hsv[1] = hsv[1].coerceIn(0.7f, 1f)
+        hsv[2] = if (yellowish) 0.72f else hsv[2].coerceIn(0.78f, 0.9f)
         val color = Color(AColor.HSVToColor(hsv))
         colorCache[pkg] = color
         return color
