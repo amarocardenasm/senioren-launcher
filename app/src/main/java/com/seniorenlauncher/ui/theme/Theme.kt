@@ -63,12 +63,16 @@ fun SeniorenLauncherTheme(
         else -> ClassicColors
     }
 
-    val scaleFactor = fontSize / 18f
-    
+    // Antes se escalaban a la vez el tamaño de todo y el de la letra, asi que
+    // con letra "enorme" el texto crecia al cuadrado y se salia de los botones.
+    // Ahora el texto crece hasta 1,45x y el resto de la interfaz solo la mitad de eso.
+    val textScale = (fontSize / 18f).coerceIn(1f, 1.45f)
+    val layoutScale = 1f + (textScale - 1f) * 0.5f
+
     val currentDensity = LocalDensity.current
     val customDensity = Density(
-        density = currentDensity.density * scaleFactor,
-        fontScale = currentDensity.fontScale * scaleFactor
+        density = currentDensity.density * layoutScale,
+        fontScale = currentDensity.fontScale * (textScale / layoutScale)
     )
 
     CompositionLocalProvider(LocalDensity provides customDensity) {

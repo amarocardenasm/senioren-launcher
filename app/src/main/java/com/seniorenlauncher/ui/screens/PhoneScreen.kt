@@ -31,6 +31,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -498,8 +501,13 @@ fun AllContactsList(
             Text("AGREGAR NUEVO CONTACTO", fontSize = 18.sp, fontWeight = FontWeight.Black)
         }
 
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp), contentPadding = PaddingValues(bottom = 24.dp)) {
-            items(filteredContacts) { contact ->
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(bottom = 24.dp)
+        ) {
+            gridItems(filteredContacts) { contact ->
                 val isFav = favorieten.any { isNumberMatch(it.phoneNumber, contact.number) }
                 ContactListItem(
                     contact = contact,
@@ -512,51 +520,77 @@ fun AllContactsList(
     }
 }
 
+/** Colores suaves y legibles para los circulos de iniciales. */
+private val contactColors = listOf(
+    Color(0xFF2563EB), Color(0xFF059669), Color(0xFFD97706), Color(0xFFDB2777),
+    Color(0xFF7C3AED), Color(0xFF0891B2), Color(0xFFDC2626), Color(0xFF65A30D)
+)
+
+fun contactInitials(name: String): String {
+    val parts = name.trim().split(Regex("\\s+")).filter { it.isNotEmpty() && it[0].isLetterOrDigit() }
+    return when {
+        parts.isEmpty() -> "?"
+        parts.size == 1 -> parts[0].take(1).uppercase()
+        else -> (parts[0].take(1) + parts[1].take(1)).uppercase()
+    }
+}
+
 @Composable
 fun ContactListItem(contact: DeviceContact, isFavorite: Boolean, onToggleFavorite: () -> Unit, onClick: () -> Unit) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.96f else 1f,
+        targetValue = if (isPressed) 0.94f else 1f,
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
         label = "scale"
     )
+    val circleColor = contactColors[Math.floorMod(contact.name.hashCode(), contactColors.size)]
 
     Surface(
         onClick = onClick,
         interactionSource = interactionSource,
         shape = RoundedCornerShape(40.dp),
-        color = if (contact.isMe) Color(0xFF6366F1).copy(alpha = 0.2f) else Color(0xFF1E293B).copy(alpha = 0.5f),
+        color = if (contact.isMe) Color(0xFF6366F1).copy(alpha = 0.2f) else Color(0xFF1E293B),
         border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f)),
         modifier = Modifier.fillMaxWidth().scale(scale)
     ) {
-        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            if (contact.photoUri != null) {
-                AsyncImage(
-                    model = contact.photoUri,
-                    contentDescription = null,
-                    modifier = Modifier.size(60.dp).clip(CircleShape).border(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), CircleShape),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Box(
-                    Modifier.size(60.dp).background(Brush.linearGradient(listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary)), CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(contact.name.take(1).uppercase(), color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Black)
+        Box {
+            Column(
+                Modifier.fillMaxWidth().padding(vertical = 20.dp, horizontal = 12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                if (contact.photoUri != null) {
+                    AsyncImage(
+                        model = contact.photoUri,
+                        contentDescription = null,
+                        modifier = Modifier.size(96.dp).clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Box(
+                        Modifier.size(96.dp).background(circleColor, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(contactInitials(contact.name), color = Color.White, fontSize = 38.sp, fontWeight = FontWeight.Black)
+                    }
                 }
+                Spacer(Modifier.height(12.dp))
+                com.seniorenlauncher.ui.components.AutoSizeText(
+                    text = contact.name,
+                    maxFontSize = 20.sp,
+                    minFontSize = 13.sp,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
-            Spacer(Modifier.width(20.dp))
-            Column(Modifier.weight(1f)) {
-                Text(contact.name, fontSize = 22.sp, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onSurface)
-                Text(contact.number, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            IconButton(onClick = onToggleFavorite) {
+            IconButton(
+                onClick = onToggleFavorite,
+                modifier = Modifier.align(Alignment.TopEnd).padding(4.dp)
+            ) {
                 Icon(
                     imageVector = if (isFavorite) Icons.Default.Star else Icons.Default.StarBorder,
-                    contentDescription = null,
-                    tint = if (isFavorite) Color(0xFFFFB100) else MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(36.dp)
+                    contentDescription = if (isFavorite) "Quitar de favoritos" else "Marcar como favorito",
+                    tint = if (isFavorite) Color(0xFFFFB100) else Color.White.copy(alpha = 0.4f),
+                    modifier = Modifier.size(32.dp)
                 )
             }
         }

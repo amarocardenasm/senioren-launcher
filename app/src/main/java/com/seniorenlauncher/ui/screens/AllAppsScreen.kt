@@ -1,5 +1,10 @@
 package com.seniorenlauncher.ui.screens
 
+import android.view.HapticFeedbackConstants
+import androidx.compose.ui.platform.LocalView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -103,6 +108,16 @@ fun AppItem(app: InstalledApp, onClick: () -> Unit) {
         animationSpec = spring(dampingRatio = 0.7f, stiffness = 500f),
         label = "scale"
     )
+    // Mientras la app abre: ruedita en vez del icono y no acepta otro toque
+    val view = LocalView.current
+    var opening by remember { mutableStateOf(false) }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_RESUME) opening = false }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+    LaunchedEffect(opening) { if (opening) { kotlinx.coroutines.delay(4000); opening = false } }
 
     Column(
         modifier = Modifier
@@ -114,12 +129,22 @@ fun AppItem(app: InstalledApp, onClick: () -> Unit) {
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
-                onClick = onClick
+                onClick = {
+                    if (!opening) {
+                        view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                        opening = true
+                        onClick()
+                    }
+                }
             )
             .padding(vertical = 20.dp, horizontal = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if (app.icon != null) {
+        if (opening) {
+            Box(Modifier.size(80.dp), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = Color.White, strokeWidth = 4.dp, modifier = Modifier.size(48.dp))
+            }
+        } else if (app.icon != null) {
             AsyncImage(
                 model = app.icon,
                 contentDescription = null,
@@ -146,14 +171,11 @@ fun AppItem(app: InstalledApp, onClick: () -> Unit) {
         
         Spacer(Modifier.height(12.dp))
         
-        Text(
-            text = app.name,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Black,
-            textAlign = TextAlign.Center,
-            maxLines = 2,
-            lineHeight = 24.sp,
-            color = Color.White
+        com.seniorenlauncher.ui.components.AutoSizeText(
+            text = if (opening) "Abriendo…" else app.name,
+            maxFontSize = 20.sp,
+            minFontSize = 13.sp,
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }

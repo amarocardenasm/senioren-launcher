@@ -1,90 +1,97 @@
 package com.seniorenlauncher.ui.screens.home
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bluetooth
+import androidx.compose.material.icons.filled.PowerSettingsNew
+import androidx.compose.material.icons.filled.Wifi
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.seniorenlauncher.LauncherApp
-import com.seniorenlauncher.data.model.AppSettings
-import com.seniorenlauncher.data.model.WeatherData
 import com.seniorenlauncher.data.model.ALL_APPS
+import com.seniorenlauncher.data.model.AppSettings
 import com.seniorenlauncher.util.AppLauncher
+import com.seniorenlauncher.util.DefaultApps
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bluetooth
-import androidx.compose.ui.graphics.Color
 
 data class HomeState(
     val settings: AppSettings = AppSettings(),
     val allVisibleApps: List<HomeApp> = emptyList(),
-    val weatherData: WeatherData? = null,
     val pendingMedsCount: Int = 0
 )
+
+/** Botones que muestran la app real del telefono (icono y color propios). */
+private val REAL_APP_IDS = setOf("photos", "browser", "camera", "sms", "email", "settings", "weather")
+
+/** Posicion fija de "Mis apps": arriba a la derecha (primera fila, segunda columna). */
+private const val MY_APPS_SLOT = 1
 
 class HomeViewModel : ViewModel() {
     private val repository = LauncherApp.instance.settingsRepository
     private val medicationDao = LauncherApp.instance.database.medicationDao()
 
-    private val _weatherData = MutableStateFlow<WeatherData?>(null)
-    
     val state: StateFlow<HomeState> = combine(
         repository.settingsFlow,
-        _weatherData,
         medicationDao.getPending()
-    ) { settings, weather, pendingMeds ->
+    ) { settings, pendingMeds ->
         HomeState(
             settings = settings,
-            weatherData = weather,
             pendingMedsCount = pendingMeds.size,
-            allVisibleApps = calculateVisibleApps(settings, weather)
+            allVisibleApps = calculateVisibleApps(settings)
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HomeState())
+    }
+        .flowOn(Dispatchers.Default) // leer iconos y colores fuera del hilo de la pantalla
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HomeState())
 
-    private fun calculateVisibleApps(settings: AppSettings, weatherData: WeatherData?): List<HomeApp> {
+    private fun calculateVisibleApps(settings: AppSettings): List<HomeApp> {
         val context = LauncherApp.instance.applicationContext
-        
-        val mappedApps = settings.appMappings.keys
-            .filter { it.startsWith("mapped_") && it in settings.visibleApps }
-            .map { id ->
-                val pkg = settings.appMappings[id] ?: ""
+
+        val standardApps = ALL_APPS
+            .filter { it.id in settings.visibleApps && it.id != "all_apps" }
+            .map { app ->
+                val realPkg = if (app.id in REAL_APP_IDS) DefaultApps.packageFor(context, app.id) else null
+                val realIcon = realPkg?.let { DefaultApps.icon(context, it) }
+                if (realPkg != null && realIcon != null) {
+                    HomeApp(
+                        id = app.id,
+                        name = app.name,
+                        icon = realIcon,
+                        color = DefaultApps.mainColor(realPkg, realIcon) ?: Color(app.color)
+                    )
+                } else {
+                    HomeApp(
+                        id = app.id,
+                        name = app.name,
+                        emoji = app.emoji,
+                        vectorIcon = when (app.id) {
+                            "bluetooth" -> Icons.Default.Bluetooth
+                            "wifi" -> Icons.Default.Wifi
+                            "power" -> Icons.Default.PowerSettingsNew
+                            else -> null
+                        },
+                        color = Color(app.color)
+                    )
+                }
+            }
+
+        val mappedApps = settings.appMappings
+            .filterKeys { it.startsWith("mapped_") && it in settings.visibleApps }
+            .map { (id, pkg) ->
                 val info = AppLauncher.getAppInfo(context, pkg)
                 HomeApp(
                     id = id,
                     name = info?.name ?: "App",
-                    emoji = null,
                     icon = info?.icon,
-                    vectorIcon = null,
-                    color = Color(0xFF718096)
+                    color = info?.icon?.let { DefaultApps.mainColor(pkg, it) } ?: Color(0xFF475569)
                 )
             }
 
-        val visibleStandardApps = ALL_APPS.filter { it.id in settings.visibleApps || it.id == "all_apps" || it.id == "settings" }.map { 
-            HomeApp(
-                id = it.id,
-                name = it.name,
-                emoji = if (it.id == "weather" && weatherData != null) getHomeWeatherEmoji(weatherData.iconUrl) else it.emoji,
-                icon = null,
-                vectorIcon = if (it.id == "bluetooth") Icons.Default.Bluetooth else null,
-                color = Color(it.color),
-                weatherOverlay = if (it.id == "weather" && weatherData != null) "${weatherData.temp.toInt()}°" else null
-            )
+        val myApps = ALL_APPS.first { it.id == "all_apps" }.let {
+            HomeApp(id = it.id, name = it.name, emoji = it.emoji, color = Color(it.color))
         }
-        return (visibleStandardApps + mappedApps).distinctBy { it.id }
-    }
-
-    fun setWeatherData(data: WeatherData?) {
-        _weatherData.value = data
-    }
-
-    private fun getHomeWeatherEmoji(iconUrl: String): String {
-        return when {
-            iconUrl.contains("01d") -> "☀️"
-            iconUrl.contains("01n") -> "🌙"
-            iconUrl.contains("02d") || iconUrl.contains("02n") -> "⛅"
-            iconUrl.contains("03") || iconUrl.contains("04") -> "☁️"
-            iconUrl.contains("09") || iconUrl.contains("10") -> "🌧️"
-            iconUrl.contains("11") -> "⛈️"
-            iconUrl.contains("13") -> "❄️"
-            iconUrl.contains("50") -> "🌫️"
-            else -> "☁️"
-        }
+        val apps = (standardApps + mappedApps).distinctBy { it.id }.toMutableList()
+        apps.add(MY_APPS_SLOT.coerceAtMost(apps.size), myApps)
+        return apps
     }
 }

@@ -23,7 +23,6 @@ import com.seniorenlauncher.ui.screens.home.*
 import android.util.Log
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
-import com.seniorenlauncher.service.StepCounterService
 
 class MainActivity : ComponentActivity() {
     
@@ -31,7 +30,6 @@ class MainActivity : ComponentActivity() {
     private var alarmTriggered = mutableStateOf<String?>(null)
     private var alarmSoundUri = mutableStateOf<String?>(null)
     private var alarmIsRemote = mutableStateOf(false)
-    private var navigateToWeatherAfterAlarm = mutableStateOf(false)
     private var fallDetectedTriggered = mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,22 +62,16 @@ class MainActivity : ComponentActivity() {
         setContent {
             val settingsVm: SettingsViewModel = viewModel()
             val settings by settingsVm.settings.collectAsState()
+            val settingsLoaded by settingsVm.loaded.collectAsState()
             
             val triggerLabel by alarmTriggered
             val alarmId by currentAlarmId
             val soundUri by alarmSoundUri
             val isRemote by alarmIsRemote
-            val shouldNavToWeather by navigateToWeatherAfterAlarm
             val isFallDetected by fallDetectedTriggered
             
             var currentRoute by remember { mutableStateOf<String?>(null) }
 
-            LaunchedEffect(Unit) {
-                // Iniciar el contador de pasos si hay permiso
-                if (hasStepPermission()) {
-                    startForegroundService(Intent(this@MainActivity, StepCounterService::class.java))
-                }
-            }
 
             if (triggerLabel != null) {
                 LaunchedEffect(Unit) {
@@ -118,9 +110,11 @@ class MainActivity : ComponentActivity() {
                                 currentAlarmId.value = -1L
                             },
                             onNavigateToWeather = {
-                                navigateToWeatherAfterAlarm.value = true
+                                com.seniorenlauncher.util.AppLauncher.openWeather(this@MainActivity)
                             }
                         )
+                    } else if (!settingsLoaded) {
+                        // Leyendo ajustes guardados (una fraccion de segundo)
                     } else if (!settings.hasCompletedSetup) {
                         SetupWizardScreen(
                             onFinished = { settingsVm.completeSetup() },
@@ -135,8 +129,6 @@ class MainActivity : ComponentActivity() {
                             Box(Modifier.weight(1f)) {
                                 AppNavigation(
                                     settingsVm = settingsVm, 
-                                    initialWeatherNav = shouldNavToWeather,
-                                    onNavigatedToWeather = { navigateToWeatherAfterAlarm.value = false },
                                     onRouteChanged = { currentRoute = it }
                                 )
                             }
@@ -192,9 +184,4 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun hasStepPermission(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED
-        } else true
-    }
 }

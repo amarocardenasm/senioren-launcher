@@ -40,7 +40,7 @@ class FallDetectionService : Service(), SensorEventListener {
             .build()
             
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            startForeground(1002, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_HEALTH)
+            startForeground(1002, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
         } else {
             startForeground(1002, notification)
         }
@@ -67,17 +67,6 @@ class FallDetectionService : Service(), SensorEventListener {
     }
     override fun onDestroy() { sensorMgr.unregisterListener(this); scope.cancel(); super.onDestroy() }
 
-    private fun hasRequiredPermissions(): Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACTIVITY_RECOGNITION) != PackageManager.PERMISSION_GRANTED) {
-                return false
-            }
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.FOREGROUND_SERVICE_HEALTH) != PackageManager.PERMISSION_GRANTED) {
-                return false
-            }
-        }
-        return true
-    }
+    // Solo usa el acelerometro, que no necesita permisos
+    private fun hasRequiredPermissions(): Boolean = true
 }

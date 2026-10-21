@@ -80,31 +80,28 @@ fun HomeTopBar(notificationCount: Int, onNotificationsClick: () -> Unit, onEmerg
 
             Spacer(Modifier.width(16.dp))
 
-            Surface(
-                onClick = onNotificationsClick,
-                modifier = Modifier.size(52.dp),
-                shape = CircleShape,
-                color = Color(0xFF1E293B).copy(alpha = 0.6f),
-                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+            // Solo la campanita; el globo rojo queda por fuera para que se vea completo
+            Box(
+                Modifier
+                    .size(56.dp)
+                    .clickable(onClick = onNotificationsClick),
+                contentAlignment = Alignment.Center
             ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        Icons.Default.Notifications,
-                        contentDescription = "Avisos",
-                        modifier = Modifier.size(28.dp),
-                        tint = if (notificationCount > 0) Color(0xFF818CF8) else Color.White.copy(alpha = 0.5f)
-                    )
-                    if (notificationCount > 0) {
-                        Surface(
-                            modifier = Modifier.align(Alignment.TopEnd).size(20.dp),
-                            shape = CircleShape,
-                            color = Color(0xFFEF4444)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Text("$notificationCount", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Black)
+                BadgedBox(
+                    badge = {
+                        if (notificationCount > 0) {
+                            Badge(containerColor = Color(0xFFEF4444), contentColor = Color.White) {
+                                Text(if (notificationCount > 99) "99+" else "$notificationCount", fontSize = 13.sp, fontWeight = FontWeight.Black)
                             }
                         }
                     }
+                ) {
+                    Icon(
+                        Icons.Default.Notifications,
+                        contentDescription = "Avisos",
+                        modifier = Modifier.size(34.dp),
+                        tint = if (notificationCount > 0) Color(0xFFFBBF24) else Color.White.copy(alpha = 0.7f)
+                    )
                 }
             }
 
@@ -227,16 +224,3 @@ fun HomeStatusCard(
     }
 }
 
-fun getHomeWeatherEmoji(iconUrl: String): String {
-    return when {
-        iconUrl.contains("01d") -> "☀️"
-        iconUrl.contains("01n") -> "🌙"
-        iconUrl.contains("02d") || iconUrl.contains("02n") -> "⛅"
-        iconUrl.contains("03") || iconUrl.contains("04") -> "☁️"
-        iconUrl.contains("09") || iconUrl.contains("10") -> "🌧️"
-        iconUrl.contains("11") -> "⛈️"
-        iconUrl.contains("13") -> "❄️"
-        iconUrl.contains("50") -> "🌫️"
-        else -> "☁️"
-    }
-}

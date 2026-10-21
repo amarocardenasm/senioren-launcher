@@ -27,15 +27,10 @@ class BootReceiver : BroadcastReceiver() {
                     val settings = app.settingsRepository.settingsFlow.first()
 
                     // 0. Start Fall Detection if enabled and permissions granted
-                    if (settings.fallDetectionEnabled && hasFallDetectionPermissions(ctx)) {
+                    if (settings.fallDetectionEnabled) {
                         ctx.startForegroundService(Intent(ctx, FallDetectionService::class.java))
                     }
 
-                    // 0.1 Start Step Counter if permissions granted
-                    if (hasFallDetectionPermissions(ctx)) {
-                        ctx.startForegroundService(Intent(ctx, com.seniorenlauncher.service.StepCounterService::class.java))
-                    }
-            
                     // 1. Medication alarms
                     val medications = db.medicationDao().getAllSync()
                     medications.forEach { med ->
@@ -55,14 +50,6 @@ class BootReceiver : BroadcastReceiver() {
                     pendingResult.finish()
                 }
             }
-        }
-    }
-
-    private fun hasFallDetectionPermissions(context: Context): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            ContextCompat.checkSelfPermission(context, Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED
-        } else {
-            true
         }
     }
 }

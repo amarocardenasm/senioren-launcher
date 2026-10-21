@@ -55,18 +55,6 @@ fun PermissionsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
     val categories = remember(isSenior) {
         val list = mutableListOf<PermissionCategory>()
         
-        val locationPermissions = mutableListOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
-
-        list.add(PermissionCategory(
-            if (isSenior) "CLIMA" else "UBICACIÓN", 
-            if (isSenior) "Para saber el clima de donde usted está." 
-            else "Necesario para conocer su ubicación y mostrar el clima.", 
-            "Privacidad: su ubicación no se comparte con nadie.",
-            Icons.Default.LocationOn, 
-            locationPermissions,
-            "Si dice que no: el clima le pedirá que elija su ciudad a mano."
-        ))
-
         list.add(PermissionCategory(
             if (isSenior) "LLAMAR A LA FAMILIA" else "TELÉFONO", 
             if (isSenior) "Para llamar directamente a sus hijos o al doctor."
@@ -93,32 +81,6 @@ fun PermissionsSetupScreen(onNext: () -> Unit, isSenior: Boolean = false) {
             Icons.Default.CalendarMonth,
             listOf(Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR),
             "Si dice que no: la agenda no podrá mostrar ni guardar citas."
-        ))
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val healthPermissions = mutableListOf(Manifest.permission.ACTIVITY_RECOGNITION)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                healthPermissions.add(Manifest.permission.FOREGROUND_SERVICE_HEALTH)
-            }
-            
-            list.add(PermissionCategory(
-                "SALUD", 
-                "Para que el teléfono cuente sus pasos diarios.", 
-                "Privacidad: estos datos quedan en su propio teléfono.",
-                Icons.AutoMirrored.Filled.DirectionsWalk, 
-                healthPermissions,
-                "Si dice que no: el contador de pasos y la detección de caídas no funcionarán."
-            ))
-        }
-
-        list.add(PermissionCategory(
-            if (isSenior) "LUPA" else "CÁMARA", 
-            if (isSenior) "Para leer letra chica con facilidad usando la cámara."
-            else "Necesario para la lupa y la linterna.", 
-            "Privacidad: no se guarda ninguna foto sin que usted lo pida.",
-            Icons.Default.CameraAlt, 
-            listOf(Manifest.permission.CAMERA),
-            "Si dice que no: la lupa y la linterna no funcionarán."
         ))
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

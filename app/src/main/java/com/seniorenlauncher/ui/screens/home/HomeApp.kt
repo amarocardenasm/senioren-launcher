@@ -11,5 +11,4 @@ data class HomeApp(
     val icon: Drawable? = null,
     val vectorIcon: ImageVector? = null,
     val color: Color,
-    val weatherOverlay: String? = null
 )
